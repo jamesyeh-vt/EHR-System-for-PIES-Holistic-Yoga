@@ -1,0 +1,31 @@
+# Build artifacts
+target/
+build/
+out/
+
+# IDE settings
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test data and logs
+*.log
+*.db
+*.test
+
+# Git-related files
+.git/
+.gitignore
+.gitattributes
+*.md
+
+# Local environment files (do not include secrets in image)
+.env
+.env.*
+*.local
