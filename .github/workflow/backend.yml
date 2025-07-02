@@ -1,0 +1,56 @@
+name: Backend Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('backend/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build JAR
+        working-directory: backend
+        run: mvn package -DskipTests
+
+      - name: Copy files to server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USER }}
+          key: ${{ secrets.GCP_KEY }}
+          port: ${{ secrets.GCP_PORT }}
+          source: |
+            backend/target/app.jar
+            backend/docker-compose.yml
+            backend/docker-compose.override.deploy.yml
+            backend/.env
+          target: ~/app/backend
+
+      - name: SSH and restart API container
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USER }}
+          key: ${{ secrets.GCP_KEY }}
+          port: ${{ secrets.GCP_PORT }}
+          script: |
+            cd ~/app/backend
+            docker compose -f docker-compose.yml -f docker-compose.override.deploy.yml up -d --no-deps api

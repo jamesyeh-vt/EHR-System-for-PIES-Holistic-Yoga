@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: dev
   application:
     name: pies_yoga
   config.import: optional:file:.env[.properties]
