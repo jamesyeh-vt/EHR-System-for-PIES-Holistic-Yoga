@@ -5,11 +5,11 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -30,21 +30,29 @@ jobs:
         working-directory: backend
         run: mvn package -DskipTests
 
+      - name: List built JARs (debug)
+        working-directory: backend/target
+        run: ls -lh
+
       - name: Rename JAR to app.jar
         working-directory: backend/target
-        run: mv pies-her-api-*.jar app.jar
+        run: mv *.jar app.jar
 
-      - name: Copy files to server via SCP
+      - name: List deploy files (debug)
+        run: |
+          ls -lh backend/target/app.jar || echo "No app.jar"
+          ls -lh backend/docker-compose.yml || echo "No docker-compose.yml"
+          ls -lh backend/docker-compose.override.deploy.yml || echo "No override.deploy.yml"
+          ls -lh backend/Dockerfile || echo "No Dockerfile"
+
+      - name: Copy deploy files to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.GCP_HOST }}
           username: ${{ secrets.GCP_USER }}
           key: ${{ secrets.GCP_KEY }}
           port: ${{ secrets.GCP_PORT }}
-          source: |
-            backend/target/app.jar
-            backend/docker-compose.yml
-            backend/docker-compose.override.deploy.yml
+          source: "backend/target/app.jar,backend/docker-compose.yml,backend/docker-compose.override.deploy.yml,backend/Dockerfile"
           target: ~/app/backend
 
       - name: SSH and restart API container
@@ -56,4 +64,4 @@ jobs:
           port: ${{ secrets.GCP_PORT }}
           script: |
             cd ~/app/backend
-            docker compose -f docker-compose.yml -f docker-compose.override.deploy.yml up -d --no-deps api
+            docker compose -f docker-compose.yml -f docker-compose.override.deploy.yml up -d api
