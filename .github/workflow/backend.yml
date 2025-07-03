@@ -30,6 +30,10 @@ jobs:
         working-directory: backend
         run: mvn package -DskipTests
 
+      - name: Rename JAR to app.jar
+        working-directory: backend/target
+        run: mv pies-her-api-*.jar app.jar
+
       - name: Copy files to server via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -41,7 +45,6 @@ jobs:
             backend/target/app.jar
             backend/docker-compose.yml
             backend/docker-compose.override.deploy.yml
-            backend/.env
           target: ~/app/backend
 
       - name: SSH and restart API container
