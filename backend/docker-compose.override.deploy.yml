@@ -2,12 +2,15 @@ version: "3.9"
 services:
   api:
     image: eclipse-temurin:17-jre
-    command: ["java", "-jar", "/app/app.jar"]
+    container_name: backend-api
+    command: [ "java", "-jar", "/app/app.jar" ]
     volumes:
       - ./app.jar:/app/app.jar
     ports:
       - "8080:8080"
     env_file: .env
+    environment:
+      - CONTAINER_NAME=backend-api
     depends_on:
       db:
         condition: service_healthy
