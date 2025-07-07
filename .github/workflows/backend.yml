@@ -34,13 +34,13 @@ jobs:
         working-directory: backend/target
         run: ls -lh
 
-      - name: Rename JAR to app.jar
-        working-directory: backend/target
-        run: mv *.jar app.jar
+      - name: Rename and move jar to deploy dir
+        run: |
+          mv backend/target/*.jar backend/app.jar
 
       - name: List deploy files (debug)
         run: |
-          ls -lh backend/target/app.jar || echo "No app.jar"
+          ls -lh backend/app.jar || echo "No app.jar"
           ls -lh backend/docker-compose.yml || echo "No docker-compose.yml"
           ls -lh backend/docker-compose.override.deploy.yml || echo "No override.deploy.yml"
           ls -lh backend/Dockerfile || echo "No Dockerfile"
@@ -52,8 +52,8 @@ jobs:
           username: ${{ secrets.GCP_USER }}
           key: ${{ secrets.GCP_KEY }}
           port: ${{ secrets.GCP_PORT }}
-          source: "backend/target/app.jar,backend/docker-compose.yml,backend/docker-compose.override.deploy.yml,backend/Dockerfile"
-          target: ~/app/backend
+          source: "backend/app.jar,backend/docker-compose.yml,backend/docker-compose.override.deploy.yml,backend/Dockerfile"
+          target: ~/app
 
       - name: SSH and restart API container
         uses: appleboy/ssh-action@v1.0.3

@@ -81,6 +81,13 @@
             <artifactId>flyway-mysql</artifactId>
         </dependency>
 
+        <!-- Log formation -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
+
         <!-- API Documentation: Swagger/OpenAPI (springdoc) -->
         <dependency>
             <groupId>org.springdoc</groupId>
