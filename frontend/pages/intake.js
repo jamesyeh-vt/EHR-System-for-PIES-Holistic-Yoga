@@ -52,10 +52,82 @@ const physicalHistoryConditions = [
 
 export default function IntakeFormPage() {
   const { register, handleSubmit, reset } = useForm();
-  const onSubmit = (data) => {
-    console.log("Intake form data", data);
-    alert("Form saved to console – backend not wired yet.");
+  const onSubmit = async (data) => {
+  const today = new Date().toISOString().split("T")[0];
+
+  const extractCheckedValues = (prefix) =>
+    Object.entries(data)
+      .filter(([key, val]) => key.startsWith(`${prefix}.`) && val)
+      .map(([key]) => key.replace(`${prefix}.`, ""));
+
+  const payload = {
+    patient: {
+      id: 0,
+      firstName: data.name?.split(" ")[0] || "",
+      lastName: data.name?.split(" ")[1] || "",
+      dateOfBirth: data.dob,
+      email: data.email,
+    },
+    therapistId: 1,
+    intakeDate: today,
+    practicedYogaBefore: data.practicedBefore === "yes",
+    lastPracticedDate: data.lastPracticeDate || null,
+    yogaFrequency: data.practiceFrequency,
+    yogaStyles: extractCheckedValues("styles").join(","),
+    yogaStyleOther: data.styles?.Other || "",
+    yogaGoals: extractCheckedValues("goals").join(","),
+    yogaGoalsOther: data.goals?.Other || "",
+    yogaGoalsExplanation: data.goalExplanation || "",
+    yogaInterests: extractCheckedValues("interests").join(","),
+    yogaInterestsOther: data.interests?.Other || "",
+    activityLevel: data.activityLevel,
+    stressLevel: parseInt(data.stressLevel) || 0,
+
+    healthHistory: {
+      anxietyDepression: !!data["physicalHistory.Anxiety/Depression"],
+      arthritisBursitis: !!data["physicalHistory.Arthritis/Bursitis"],
+      asthma: !!data["physicalHistory.Asthma / Short breath"],
+      autoimmune: !!data["physicalHistory.Auto‑immune condition"],
+      backProblems: !!data["physicalHistory.Back problems"],
+      bloodPressure: !!data["physicalHistory.High/Low blood pressure"],
+      brokenBones: !!data["physicalHistory.Broken/Dislocated bones"],
+      cancer: !!data["physicalHistory.Cancer"],
+      diabetes: !!data["physicalHistory.Diabetes type 1 or 2"],
+      discProblems: !!data["physicalHistory.Disc problems"],
+      heartConditions: !!data["physicalHistory.Heart conditions / Chest pain"],
+      insomnia: !!data["physicalHistory.Insomnia"],
+      muscleStrain: !!data["physicalHistory.Muscle strain/sprain"],
+      numbnessTingling: !!data["physicalHistory.Numbness / Tingling"],
+      osteoporosis: !!data["physicalHistory.Osteoporosis"],
+      pregnancy: !!data["physicalHistory.Pregnancy"],
+      pregnancyEdd: data.pregnancyEdd || null,
+      scoliosis: !!data["physicalHistory.Scoliosis"],
+      seizures: !!data["physicalHistory.Seizures"],
+      stroke: !!data["physicalHistory.Stroke"],
+      surgery: !!data["physicalHistory.Surgery"],
+      medications: !!data.medications,
+      medicationsList: data.medications || "",
+      additionalNotes: data.additionalDetails || "",
+    }
   };
+
+  try {
+    const res = await fetch("http://localhost:8080/intakes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) throw new Error("Failed to submit intake form");
+
+    alert("Form submitted successfully!");
+  } catch (err) {
+    console.error("Submission error:", err);
+    alert("Error submitting intake form.");
+  }
+};
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-4xl mx-auto">
