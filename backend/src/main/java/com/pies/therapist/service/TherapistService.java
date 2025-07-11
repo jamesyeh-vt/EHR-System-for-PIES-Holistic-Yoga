@@ -23,9 +23,8 @@ public class TherapistService {
 
     @Transactional
     public Therapist save(Therapist t) {
-        if (t.getPassword() != null && !t.getPassword().isBlank()) {
-            // Automatically hash the password before saving
-            t.setPasswordHash(passwordEncoder.encode(t.getPassword()));
+        if (t.getRawPassword() != null && !t.getRawPassword().isBlank()) {
+            t.setPasswordHash(passwordEncoder.encode(t.getRawPassword())); // hashes the transient password
         } else {
             throw new IllegalArgumentException("Password cannot be null or empty");
         }
