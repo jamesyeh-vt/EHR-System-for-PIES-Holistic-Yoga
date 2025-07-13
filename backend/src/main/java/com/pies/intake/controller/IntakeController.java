@@ -83,7 +83,7 @@ public class IntakeController {
             history.setMedicationsList(request.getHealthHistory().getMedicationsList());
             history.setAdditionalNotes(request.getHealthHistory().getAdditionalNotes());
 
-            // Save patient → intake → health history in one step
+            
             IntakeForm savedForm = svc.save(form, history);
 
             return ResponseEntity.ok(savedForm);

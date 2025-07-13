@@ -1,5 +1,7 @@
 package com.pies.intake.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,8 +27,12 @@ public class IntakeFormHealthHistory {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "intake_form_id")
+    @JoinColumn(name = "intake_form_id", nullable = false)
     private IntakeForm intakeForm;
+    @JsonIgnore
+    public IntakeForm getIntakeForm() {
+        return intakeForm;
+    }
 
 
     private Boolean anxietyDepression;

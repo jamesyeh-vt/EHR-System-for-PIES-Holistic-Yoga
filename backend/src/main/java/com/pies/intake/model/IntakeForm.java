@@ -54,7 +54,16 @@ public class IntakeForm {
     private String activityLevel;
     private Integer stressLevel;
 
-    @OneToOne(mappedBy = "intakeForm", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "intakeForm", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private IntakeFormHealthHistory healthHistory;
-}
+
+    public IntakeFormHealthHistory getHealthHistory() {
+        return healthHistory;
+    }
+
+    public void setHealthHistory(IntakeFormHealthHistory healthHistory) {
+        this.healthHistory = healthHistory;
+    }
+
+};
 
