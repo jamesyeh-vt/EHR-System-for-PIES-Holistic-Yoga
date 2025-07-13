@@ -9,6 +9,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,16 +17,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/** Production profile: JWT protected, Swagger disabled by property */
+/**
+ * Production profile: JWT protected, Swagger disabled by property
+ */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @Profile("prod")
 @RequiredArgsConstructor
 public class SecurityConfigProd {
 
     private final JwtAuthFilter jwtFilter;
 
-    /** BCrypt encoder used by Auth flow */
+    /**
+     * BCrypt encoder used by Auth flow
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -37,7 +43,8 @@ public class SecurityConfigProd {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/therapists/**").hasRole("ADMIN")
                         .requestMatchers("/therapists/**").hasAnyRole("ADMIN", "SENIOR")
                         .anyRequest().authenticated())

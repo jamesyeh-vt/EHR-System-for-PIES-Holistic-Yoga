@@ -7,9 +7,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
-/** REST endpoints for Therapist CRUD */
+/**
+ * REST endpoints for Therapist CRUD
+ */
 @Tag(name = "Therapists")
 @RestController
 @RequestMapping("/therapists")
@@ -23,13 +27,26 @@ public class TherapistController {
         return svc.save(t);
     }
 
+    @PutMapping("{id}")
+    public Therapist update(@PathVariable Long id, @RequestBody Therapist t) {
+        return svc.update(id, t);
+    }
+
     @GetMapping("{id}")
     public Therapist get(@PathVariable Long id) {
         return svc.findById(id);
     }
 
     @GetMapping
-    public List<Therapist> list() {
-        return svc.findAll();
+    public Page<Therapist> list(@RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "10") int size,
+                                @RequestParam(required = false) String q) {
+        Pageable pageable = PageRequest.of(page, size);
+        return svc.findActive(q, pageable);
+    }
+
+    @DeleteMapping("{id}")
+    public void delete(@PathVariable Long id) {
+        svc.delete(id);
     }
 }

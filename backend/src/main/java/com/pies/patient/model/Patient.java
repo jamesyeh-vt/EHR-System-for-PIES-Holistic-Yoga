@@ -6,12 +6,18 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-/** JPA entity for patient */
-@Entity @Getter @Setter @NoArgsConstructor
+/**
+ * JPA entity for patient
+ */
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
 @Table(name = "patients")
 public class Patient {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
@@ -24,4 +30,6 @@ public class Patient {
 
     @Email
     private String email;
+
+    private boolean activeStatus = true;
 }
