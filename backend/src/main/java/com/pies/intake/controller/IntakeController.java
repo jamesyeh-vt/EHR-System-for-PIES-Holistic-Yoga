@@ -14,26 +14,30 @@ import com.pies.intake.model.IntakeForm;
 import com.pies.intake.model.IntakeFormHealthHistory;
 import com.pies.intake.payload.IntakeRequest;
 import com.pies.intake.service.IntakeService;
+import com.pies.therapist.model.Therapist;
+import com.pies.therapist.repository.TherapistRepository;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "IntakeForms")
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/intakes")
-@RequiredArgsConstructor
 public class IntakeController {
 
     private final IntakeService svc;
+    private final TherapistRepository therapistRepository;
 
-    @PostMapping
-    public ResponseEntity<IntakeForm> create(@RequestBody @Valid IntakeRequest request) {
-        // Convert request to IntakeForm and HealthHistory
+@PostMapping
+public ResponseEntity<?> create(@RequestBody @Valid IntakeRequest request) {
+    try {
+        Therapist therapist = therapistRepository.findById(request.getTherapistId())
+                .orElseThrow(() -> new EntityNotFoundException("Therapist not found with ID: " + request.getTherapistId()));
+
         IntakeForm form = new IntakeForm();
         form.setPatient(request.getPatient());
-        // form.setTherapistId(request.getTherapistId());
-        form.setTherapist(null);  // Skip therapist for now
+        form.setTherapist(therapist);
         form.setDateSubmitted(request.getIntakeDate());
         form.setPracticedYogaBefore(request.getPracticedYogaBefore());
         form.setLastPracticedDate(request.getLastPracticedDate());
@@ -48,9 +52,9 @@ public class IntakeController {
         form.setActivityLevel(request.getActivityLevel());
         form.setStressLevel(request.getStressLevel());
 
-        IntakeForm savedForm = svc.save(form);
+        IntakeForm savedForm = svc.save(form, request.getPatient());
 
-        // Health history
+
         IntakeFormHealthHistory history = new IntakeFormHealthHistory();
         history.setIntakeForm(savedForm);
         history.setAnxietyDepression(request.getHealthHistory().getAnxietyDepression());
@@ -81,7 +85,12 @@ public class IntakeController {
         svc.saveHealthHistory(history);
 
         return ResponseEntity.ok(savedForm);
+
+    } catch (Exception e) {
+        e.printStackTrace(); // prints to console
+        return ResponseEntity.status(500).body("Failed to save intake form: " + e.getMessage());
     }
+}
 
     @GetMapping("{id}")
     public IntakeForm get(@PathVariable Long id){

@@ -37,7 +37,7 @@ public class TherapistController {
             Therapist saved = svc.save(t);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
-            e.printStackTrace(); // log to console
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body("Failed to create therapist: " + e.getMessage());
         }
     }
@@ -50,6 +50,7 @@ public class TherapistController {
     @GetMapping
     public List<Therapist> list() {
         return svc.findAll();
+
     }
 }
 

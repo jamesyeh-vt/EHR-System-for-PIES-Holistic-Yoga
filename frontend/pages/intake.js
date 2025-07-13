@@ -50,6 +50,7 @@ const physicalHistoryConditions = [
   "Surgery",
 ];
 
+
 export default function IntakeFormPage() {
   const { register, handleSubmit, reset } = useForm();
   const onSubmit = async (data) => {
@@ -63,10 +64,21 @@ export default function IntakeFormPage() {
   const payload = {
     patient: {
       id: 0,
-      firstName: data.name?.split(" ")[0] || "",
-      lastName: data.name?.split(" ")[1] || "",
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
       dateOfBirth: data.dob,
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      zipCode: data.zipCode,
       email: data.email,
+      homePhoneNumber: data.homePhone,
+      cellPhoneNumber: data.cellPhone,
+      workPhoneNumber: data.workPhone,
+      emergencyContactName: data.emergencyContactName,
+      emergencyContactPhone: data.emergencyContactPhone,
+      referredBy: data.referredBy,
+      dateCreated: today
     },
     therapistId: 1,
     intakeDate: today,
@@ -134,16 +146,20 @@ export default function IntakeFormPage() {
       {/* PAGE 1 */}
       <h2 className="text-xl font-semibold text-brandLavender">Confidential Information</h2>
       <div className="grid md:grid-cols-2 gap-4">
-        <TextInput label="Name" name="name" register={register} required />
+        <TextInput label="First Name" name="firstName" register={register} required />
+        <TextInput label="Last Name" name="lastName" register={register} required />
         <TextInput label="Date of Birth" name="dob" type="date" register={register} required />
         <TextInput label="Address" name="address" register={register} required className="md:col-span-2" />
-        <TextInput label="City, State, Zip" name="cityStateZip" register={register} required className="md:col-span-2" />
+        <TextInput label="City" name="city" register={register} required />
+        <TextInput label="State" name="state" register={register} required />
+        <TextInput label="Zip Code" name="zipCode" register={register} required />
         <TextInput label="Home Phone" name="homePhone" register={register} />
         <TextInput label="Cell Phone" name="cellPhone" register={register} />
         <TextInput label="Work Phone" name="workPhone" register={register} />
         <TextInput label="Email" name="email" type="email" register={register} />
         <TextInput label="Occupation" name="occupation" register={register} />
-        <TextInput label="Emergency Contact (name & #)" name="emergencyContact" register={register} className="md:col-span-2" />
+        <TextInput label="Emergency Contact Name" name="emergencyContactName" register={register} required />
+        <TextInput label="Emergency Contact Phone" name="emergencyContactPhone" register={register} required />
         <TextInput label="Referred By" name="referredBy" register={register} className="md:col-span-2" />
       </div>
 
