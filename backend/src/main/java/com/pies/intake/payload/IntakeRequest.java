@@ -1,6 +1,7 @@
 package com.pies.intake.payload;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pies.patient.model.Patient;
@@ -19,13 +20,15 @@ public class IntakeRequest {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate lastPracticedDate;
     private String yogaFrequency;
-    private String yogaStyles;
+
+    private List<String> yogaStyles;
     private String yogaStyleOther;
-    private String yogaGoals;
+    private List<String> yogaGoals;
     private String yogaGoalsOther;
     private String yogaGoalsExplanation;
-    private String yogaInterests;
+    private List<String> yogaInterests;
     private String yogaInterestsOther;
+
     private String activityLevel;
     private Integer stressLevel;
 

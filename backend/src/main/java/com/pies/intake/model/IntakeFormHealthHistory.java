@@ -25,8 +25,9 @@ public class IntakeFormHealthHistory {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "intake_form_id", unique = true)
+    @JoinColumn(name = "intake_form_id")
     private IntakeForm intakeForm;
+
 
     private Boolean anxietyDepression;
     private Boolean arthritisBursitis;

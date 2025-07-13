@@ -21,19 +21,27 @@ public class IntakeService {
 
     private final IntakeRepository repo;
     private final IntakeFormHealthHistoryRepository healthRepo;
-    private final PatientRepository patientRepo;
+    private final PatientRepository patientRepository;
 
     @Transactional
-    public IntakeForm save(IntakeForm form, Patient patient) {
-        // Save the patient first so we have a valid ID
-        Patient savedPatient = patientRepo.save(patient);
-
-        // Attach saved patient to the intake form
-        form.setPatient(savedPatient);
+    public IntakeForm save(IntakeForm form, IntakeFormHealthHistory history) {
+        // Save the patient if not already persisted
+        if (form.getPatient() != null && form.getPatient().getId() == null) {
+            Patient savedPatient = patientRepository.save(form.getPatient());
+            form.setPatient(savedPatient);
+        }
 
         // Save the intake form
-        return repo.save(form);
-    }
+        IntakeForm savedForm = repo.save(form);
+
+        // Save the health history (link to intake form)
+        if (history != null) {
+            history.setIntakeForm(savedForm);
+            healthRepo.save(history);
+        }
+
+    return savedForm;
+}
 
     @Transactional
     public void saveHealthHistory(IntakeFormHealthHistory history) {

@@ -7,6 +7,7 @@ import com.pies.therapist.model.Therapist;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -53,7 +54,7 @@ public class IntakeForm {
     private String activityLevel;
     private Integer stressLevel;
 
-    @OneToOne(mappedBy = "intakeForm", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "intakeForm", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private IntakeFormHealthHistory healthHistory;
 }
 
