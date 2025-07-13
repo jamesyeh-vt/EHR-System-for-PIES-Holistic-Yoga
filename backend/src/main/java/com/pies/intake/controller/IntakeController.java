@@ -45,12 +45,24 @@ public class IntakeController {
             form.setYogaFrequency(request.getYogaFrequency());
 
             // Convert List<String> to comma-separated Strings
-            form.setYogaStyles(request.getYogaStyles() != null ? String.join(",", request.getYogaStyles()) : null);
+            form.setYogaStyles(
+                request.getYogaStyles() != null && !request.getYogaStyles().isEmpty()
+                    ? String.join(",", request.getYogaStyles())
+                    : null
+            );
             form.setYogaStyleOther(request.getYogaStyleOther());
-            form.setYogaGoals(request.getYogaGoals() != null ? String.join(",", request.getYogaGoals()) : null);
+            form.setYogaGoals(
+                request.getYogaGoals() != null && !request.getYogaGoals().isEmpty()
+                    ? String.join(",", request.getYogaGoals())
+                    : null
+            );
             form.setYogaGoalsOther(request.getYogaGoalsOther());
             form.setYogaGoalsExplanation(request.getYogaGoalsExplanation());
-            form.setYogaInterests(request.getYogaInterests() != null ? String.join(",", request.getYogaInterests()) : null);
+            form.setYogaInterests(
+                request.getYogaInterests() != null && !request.getYogaInterests().isEmpty()
+                    ? String.join(",", request.getYogaInterests())
+                    : null
+            );
             form.setYogaInterestsOther(request.getYogaInterestsOther());
 
             form.setActivityLevel(request.getActivityLevel());

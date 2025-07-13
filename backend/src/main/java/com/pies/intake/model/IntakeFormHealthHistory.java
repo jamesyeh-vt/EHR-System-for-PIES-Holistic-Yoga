@@ -34,7 +34,6 @@ public class IntakeFormHealthHistory {
         return intakeForm;
     }
 
-
     private Boolean anxietyDepression;
     private Boolean arthritisBursitis;
     private Boolean asthma;
@@ -59,4 +58,9 @@ public class IntakeFormHealthHistory {
     private Boolean medications;
     private String medicationsList;
     private String additionalNotes;
+
+    public void setIntakeForm(IntakeForm intakeForm) {
+        this.intakeForm = intakeForm;
+    }
+
 }
