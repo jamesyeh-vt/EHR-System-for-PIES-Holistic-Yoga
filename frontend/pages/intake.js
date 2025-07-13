@@ -52,6 +52,30 @@ const physicalHistoryConditions = [
   "Surgery",
 ];
 
+const fieldNameMap = {
+  "Broken/Dislocated bones": "brokenBones",
+  "Muscle strain/sprain": "muscleStrain",
+  "Arthritis/Bursitis": "arthritisBursitis",
+  "Disc problems": "discProblems",
+  "Scoliosis": "scoliosis",
+  "Back problems": "backProblems",
+  "Osteoporosis": "osteoporosis",
+  "Diabetes type 1 or 2": "diabetes",
+  "High/Low blood pressure": "bloodPressure",
+  "Insomnia": "insomnia",
+  "Anxiety/Depression": "anxietyDepression",
+  "Asthma / Short breath": "asthma",
+  "Numbness / Tingling": "numbnessTingling",
+  "Cancer": "cancer",
+  "Seizures": "seizures",
+  "Stroke": "stroke",
+  "Heart conditions / Chest pain": "heartConditions",
+  "Pregnancy": "pregnancy",
+  "Auto‑immune condition": "autoimmune",
+  "Surgery": "surgery",
+};
+
+
 
 export default function IntakeFormPage() {
   const { register, handleSubmit, reset, watch } = useForm();
@@ -67,7 +91,7 @@ export default function IntakeFormPage() {
 
     const payload = {
       patient: {
-        id: 0,
+        //id: 0,
         firstName: data.firstName || "",
         lastName: data.lastName || "",
         dateOfBirth: data.dob,
@@ -81,7 +105,7 @@ export default function IntakeFormPage() {
         workPhoneNumber: data.workPhone,
         emergencyContactName: data.emergencyContactName,
         emergencyContactPhone: data.emergencyContactPhone,
-        referredBy: data.referredBy,
+        referredBy: data.referredB,
         dateCreated: today
       },
       therapistId: 1,
@@ -125,6 +149,10 @@ export default function IntakeFormPage() {
         additionalNotes: data.additionalDetails || "",
       }
     };
+    console.log("Test:", data.email);
+
+    console.log("Submitting Health History:", data.healthHistory);
+
 
     try {
       const res = await fetch("http://localhost:8080/intakes", {
@@ -210,7 +238,7 @@ export default function IntakeFormPage() {
       </select>
       <TextInput label="Stress level (1‑10)" name="stressLevel" type="number" min="1" max="10" register={register} />
 
-      <CheckBoxGroup title="Physical History" namePrefix="physicalHistory" options={physicalHistoryConditions} register={register} />
+      <CheckBoxGroup title="Physical History" namePrefix="physicalHistory" options={physicalHistoryConditions} register={register} />      
 
       <TextInput label="Other / Explain" name="otherExplain" register={register} className="md:col-span-2" />
       <label className="block font-medium mb-1">Are you currently taking any medications?</label>

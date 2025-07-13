@@ -1,7 +1,8 @@
 package com.pies.patient.model;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -74,10 +75,11 @@ public class Patient {
     private String referredBy;
 
     @Column(name = "date_created")
-    private LocalDateTime dateCreated;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate dateCreated;
 
     @PrePersist
     public void onCreate() {
-        this.dateCreated = LocalDateTime.now();
+        this.dateCreated = LocalDate.now();
     }
 }
