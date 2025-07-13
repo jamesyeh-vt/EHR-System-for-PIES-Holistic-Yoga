@@ -55,15 +55,15 @@ const physicalHistoryConditions = [
 
 export default function IntakeFormPage() {
   const { register, handleSubmit, reset, watch } = useForm();
-  const practicedBefore = watch("practicedBefore");
 
   const [selectedYogaStyles, setSelectedYogaStyles] = useState([]);
   const [selectedYogaGoals, setSelectedYogaGoals] = useState([]);
   const [selectedYogaInterests, setSelectedYogaInterests] = useState([]);
 
-  const onSubmit = async (data) => {
-    const today = new Date().toISOString();
+  const practicedBefore = watch("practicedBefore");
 
+  const onSubmit = async (data) => {
+    const today = new Date().toISOString().split("T")[0];
 
     const payload = {
       patient: {
