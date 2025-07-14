@@ -5,6 +5,8 @@ import com.pies.therapist.service.TherapistService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.data.domain.Page;
@@ -22,14 +24,20 @@ public class TherapistController {
 
     private final TherapistService svc;
 
+    public record SimpleResponse(String message) {
+    }
+
     @PostMapping
-    public Therapist create(@RequestBody @Valid Therapist t) {
-        return svc.save(t);
+    public ResponseEntity<SimpleResponse> create(@RequestBody @Valid Therapist t) {
+        svc.save(t);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new SimpleResponse("Therapist created successfully"));
     }
 
     @PutMapping("{id}")
-    public Therapist update(@PathVariable Long id, @RequestBody Therapist t) {
-        return svc.update(id, t);
+    public ResponseEntity<SimpleResponse> update(@PathVariable Long id, @RequestBody Therapist t) {
+        svc.update(id, t);
+        return ResponseEntity.ok(new SimpleResponse("Therapist updated successfully"));
     }
 
     @GetMapping("{id}")
@@ -46,7 +54,8 @@ public class TherapistController {
     }
 
     @DeleteMapping("{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<SimpleResponse> delete(@PathVariable Long id) {
         svc.delete(id);
+        return ResponseEntity.ok(new SimpleResponse("Therapist deleted successfully"));
     }
 }

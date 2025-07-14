@@ -1,5 +1,6 @@
 package com.pies.intake.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pies.patient.model.Patient;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +14,7 @@ public class IntakeForm {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY) // id is only included in responses, not in requests
     private Long id;
 
     @OneToOne

@@ -21,7 +21,7 @@ public class TherapistService {
 
     @Transactional
     public Therapist save(Therapist t) {
-        t.setPasswordHash(encoder.encode(t.getPasswordHash()));
+        t.setPasswordHash(encoder.encode(t.getRawPassword()));
         var saved = repo.save(t);
         audit.record("CREATE", "Therapist", saved.getId());
         return saved;
@@ -34,7 +34,8 @@ public class TherapistService {
         if (in.getLastName() != null) t.setLastName(in.getLastName());
         if (in.getEmail() != null) t.setEmail(in.getEmail());
         if (in.getPhoneNumber() != null) t.setPhoneNumber(in.getPhoneNumber());
-        if (in.getPasswordHash() != null) t.setPasswordHash(encoder.encode(in.getPasswordHash()));
+        if (in.getRawPassword() != null)
+            t.setPasswordHash(encoder.encode(in.getRawPassword()));
         var saved = repo.save(t);
         audit.record("UPDATE", "Therapist", saved.getId());
         return saved;
