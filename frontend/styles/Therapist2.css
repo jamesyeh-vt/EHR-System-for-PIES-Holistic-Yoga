@@ -1,0 +1,48 @@
+/* Retro Theme */
+
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #000000;
+    color: #33FF33;
+    margin: 0;
+    padding: 0;
+}
+
+input, textarea, select {
+    background-color: #000000;
+    color: #33FF33;
+    border: 1px solid #33FF33;
+    padding: 10px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #33FF33;
+    color: #000000;
+    border: 1px solid #33FF33;
+    padding: 10px 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #66FF66;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #000000;
+    color: #33FF33;
+}
+
+th, td {
+    border: 1px solid #33FF33;
+    padding: 12px;
+    text-align: left;
+}
+
+.signature-pad {
+    border: 2px solid #33FF33;
+    background-color: #000000;
+}
