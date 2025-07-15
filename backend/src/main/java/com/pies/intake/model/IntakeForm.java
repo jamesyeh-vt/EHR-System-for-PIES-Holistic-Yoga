@@ -2,6 +2,7 @@ package com.pies.intake.model;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pies.patient.model.Patient;
 import com.pies.therapist.model.Therapist;
 
@@ -40,8 +41,10 @@ public class IntakeForm {
     @JoinColumn(name = "therapist_id")
     private Therapist therapist;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateSubmitted;
     private Boolean practicedYogaBefore;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate lastPracticedDate;
     private String yogaFrequency;
     private String yogaStyles;
