@@ -42,8 +42,12 @@ public class TherapistService {
     }
 
     public Therapist findById(Long id) {
-        return repo.findById(id)
+        var t = repo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Therapist " + id + " not found"));
+        if (!t.isActiveStatus()) {
+            throw new EntityNotFoundException("Therapist " + id + " not found");
+        }
+        return t;
     }
 
     public Page<Therapist> findActive(String q, Pageable pageable) {

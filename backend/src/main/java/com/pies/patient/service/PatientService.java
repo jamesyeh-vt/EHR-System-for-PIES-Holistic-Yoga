@@ -38,8 +38,12 @@ public class PatientService {
     }
 
     public Patient findById(Long id) {
-        return repo.findById(id)
+        var p = repo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Patient " + id + " not found"));
+        if (!p.isActiveStatus()) {
+            throw new EntityNotFoundException("Patient " + id + " not found");
+        }
+        return p;
     }
 
     public Page<Patient> findActive(String q, Pageable pageable) {

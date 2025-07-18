@@ -35,8 +35,12 @@ public class IntakeService {
     }
 
     public IntakeForm findById(Long id) {
-        return repo.findById(id)
+        var f = repo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Intake " + id + " not found"));
+        if (!f.isActiveStatus()) {
+            throw new EntityNotFoundException("Intake " + id + " not found");
+        }
+        return f;
     }
 
     public Page<IntakeForm> findActive(String q, Pageable pageable) {
