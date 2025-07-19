@@ -42,6 +42,7 @@ public class SecurityConfig {
     @Profile({"prod", "dev"})
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
