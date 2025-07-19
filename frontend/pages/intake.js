@@ -105,7 +105,7 @@ export default function IntakeFormPage() {
         workPhoneNumber: data.workPhone,
         emergencyContactName: data.emergencyContactName,
         emergencyContactPhone: data.emergencyContactPhone,
-        referredBy: data.referredB,
+        referredBy: data.referredBy,
         dateCreated: today
       },
       therapistId: 1,
