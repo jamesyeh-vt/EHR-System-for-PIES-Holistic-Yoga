@@ -1,11 +1,6 @@
 security:
   disable: true
 
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: update
-
 springdoc:
   api-docs:
     enabled: true
