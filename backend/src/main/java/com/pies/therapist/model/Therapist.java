@@ -1,16 +1,20 @@
 package com.pies.therapist.model;
 
+import java.util.Collection;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
-import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.*;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
- * Persistent entity representing a therapist account
+ * Persistent entity representing a therapist account.
  */
 @Entity
 @Table(name = "therapists")
@@ -21,7 +25,7 @@ public class Therapist implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY) // Only for responses, not requests
     private Long id;
 
     private String firstName;
@@ -34,34 +38,45 @@ public class Therapist implements UserDetails {
     private String phoneNumber;
 
     /**
-     * BCrypt hash string
+     * BCrypt-hashed password string (stored in DB, not exposed in JSON).
      */
     @JsonIgnore
     private String passwordHash;
 
+    /**
+     * Raw password (write-only, not persisted; only used for registration or
+     * updates).
+     */
     @Transient
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    public String getRawPassword() {
-        return password;
-    }
-
+    /**
+     * Account role for Spring Security.
+     */
     @Enumerated(EnumType.STRING)
     private TherapistRole role;
 
+    /**
+     * Soft delete flag for business logic.
+     */
     private boolean activeStatus = true;
+
+    /**
+     * Account enabled/disabled flag (for login).
+     */
+    private boolean enabled = true;
 
     /* ===== UserDetails implementation ===== */
 
-    @JsonIgnore
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(() -> "ROLE_" + role.name());
     }
 
-    @JsonIgnore
     @Override
+    @JsonIgnore
     public String getPassword() {
         return passwordHash;
     }
@@ -86,8 +101,20 @@ public class Therapist implements UserDetails {
         return true;
     }
 
+    /**
+     * Returns the account enabled flag for Spring Security.
+     * Use `enabled` for authentication, and `activeStatus` for logical business
+     * rules (e.g., soft delete).
+     */
     @Override
     public boolean isEnabled() {
-        return activeStatus;
+        return enabled;
+    }
+
+    /**
+     * Expose raw password for service logic (never persisted).
+     */
+    public String getRawPassword() {
+        return this.password;
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 /**
  * Unified SecurityConfig: supports both dev and prod profiles.
@@ -29,7 +30,7 @@ public class SecurityConfig {
 
     // Both prod & dev use the same security rules
     @Bean
-    @Profile({"prod", "dev"})
+    @Profile({ "prod", "dev" })
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
@@ -40,8 +41,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/register").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/therapists/**").hasRole("ADMIN")
                         .requestMatchers("/therapists/**").hasAnyRole("ADMIN", "SENIOR")
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(Customizer.withDefaults());
         return http.build();
@@ -69,5 +69,19 @@ public class SecurityConfig {
                 return rawPassword != null && rawPassword.toString().equals(encodedPassword);
             }
         };
+    }
+
+    @Bean
+    @Profile("dev")
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

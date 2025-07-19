@@ -1,3 +1,13 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
 springdoc:
-  api-docs.enabled: false
-  swagger-ui.enabled: false
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+security:
+  disable: false
