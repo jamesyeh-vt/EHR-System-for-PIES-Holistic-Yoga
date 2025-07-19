@@ -10,9 +10,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Authentication endpoints for login and registration.
@@ -30,6 +31,9 @@ public class AuthController {
     record LoginReq(@NotBlank String username, @NotBlank String password) {
     }
 
+    record LoginResp(String token, TherapistRole role) {
+    }
+
     record RegisterReq(@NotBlank String username,
                        @NotBlank String password,
                        String firstName,
@@ -43,7 +47,7 @@ public class AuthController {
      * In dev profile, missing users are auto-registered. In prod, password is always verified.
      */
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody LoginReq req) {
+    public LoginResp login(@RequestBody LoginReq req) {
         Therapist u = repo.findByUsername(req.username()).orElse(null);
 
         // In dev: auto-register user if not found
@@ -59,7 +63,7 @@ public class AuthController {
                 u.setActiveStatus(true);
                 u = repo.save(u);
             }
-            return Map.of("token", jwt.generate(u));
+            return new LoginResp(jwt.generate(u), u.getRole());
         }
 
         // In prod: must exist and password must match
@@ -67,7 +71,7 @@ public class AuthController {
             throw new RuntimeException("user not found");
         if (!encoder.matches(req.password(), u.getPasswordHash()))
             throw new RuntimeException("bad credentials");
-        return Map.of("token", jwt.generate(u));
+        return new LoginResp(jwt.generate(u), u.getRole());
     }
 
     /**

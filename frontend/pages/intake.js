@@ -3,6 +3,7 @@ import { TextInput } from "../components/TextInput";
 import { CheckBoxGroup } from "../components/CheckBoxGroup";
 import { SignaturePadField } from "../components/SignaturePadField";
 import { useState } from 'react';
+import { apiFetch } from "../utils/api";
 
 
 // Helper data arrays used by multiple forms
@@ -155,7 +156,7 @@ export default function IntakeFormPage() {
 
 
     try {
-      const res = await fetch("http://localhost:8080/intakes", {
+      const res = await apiFetch("http://localhost:8080/intakes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
