@@ -14,10 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-@ConditionalOnProperty(
-        name = "security.disable",
-        havingValue = "false",
-        matchIfMissing = true)
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 

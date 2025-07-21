@@ -2,5 +2,14 @@ security:
   disable: true
 
 springdoc:
-  swagger-ui.path: /swagger-ui.html
-  api-docs.path: /v3/api-docs
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    try-it-out-enabled: true
+
+cors:
+  allowed-origins:
+    - http://localhost:3000

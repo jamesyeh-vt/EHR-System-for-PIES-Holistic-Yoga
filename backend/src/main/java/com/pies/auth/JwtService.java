@@ -20,7 +20,9 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    /** Generate JWT string (HS256) */
+    /**
+     * Generate JWT string (HS256)
+     */
     public String generate(UserDetails user) {
         long expAt = System.currentTimeMillis() + EXP_MILLIS;
         String role = user.getAuthorities()
@@ -37,7 +39,9 @@ public class JwtService {
                 .compact();
     }
 
-    /** Extract subject (username) */
+    /**
+     * Extract subject (username)
+     */
     public String extractUsername(String token) {
         return Jwts.parser()
                 .setSigningKey(key)
