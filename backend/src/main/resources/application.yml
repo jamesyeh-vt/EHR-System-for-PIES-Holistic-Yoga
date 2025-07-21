@@ -27,3 +27,6 @@ logging:
 
 security:
   disable: false
+
+server:
+  forward-headers-strategy: native
