@@ -19,6 +19,7 @@ public class OpenApiConfig {
                         new SecurityScheme().type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer").bearerFormat("JWT")))
                 .info(new Info().title("PIES API").version("v1"))
-                .addServersItem(new Server().url("https://piesyoga.us.kg"));
+                .addServersItem(new Server().url("https://piesyoga.us.kg"))
+                .addServersItem(new Server().url("http://localhost:8080"));
     }
 }
