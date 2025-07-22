@@ -1,16 +1,17 @@
 package com.pies.patient.service;
 
-import com.pies.audit.service.AuditLogService;
-import com.pies.patient.model.Patient;
-import com.pies.patient.repository.PatientRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.pies.audit.service.AuditLogService;
+import com.pies.patient.model.Patient;
+import com.pies.patient.payload.PatientRequest;
+import com.pies.patient.repository.PatientRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -57,5 +58,39 @@ public class PatientService {
         p.setActiveStatus(false);
         repo.save(p);
         audit.record("DELETE", "Patient", id);
+    }
+    @Transactional
+    public Patient createFromRequest(PatientRequest req) {
+        Patient p = new Patient();
+        mapRequestToEntity(req, p);
+        var saved = repo.save(p);
+        audit.record("CREATE", "Patient", saved.getId());
+        return saved;
+    }
+
+    @Transactional
+    public Patient updateFromRequest(Long id, PatientRequest req) {
+        var p = findById(id);
+        mapRequestToEntity(req, p);
+        var saved = repo.save(p);
+        audit.record("UPDATE", "Patient", saved.getId());
+        return saved;
+    }
+
+    private void mapRequestToEntity(PatientRequest req, Patient p) {
+        p.setFirstName(req.getFirstName());
+        p.setLastName(req.getLastName());
+        p.setDateOfBirth(req.getDateOfBirth());
+        p.setAddress(req.getAddress());
+        p.setCity(req.getCity());
+        p.setState(req.getState());
+        p.setZipCode(req.getZipCode());
+        p.setEmail(req.getEmail());
+        p.setHomePhoneNumber(req.getHomePhoneNumber());
+        p.setCellPhoneNumber(req.getCellPhoneNumber());
+        p.setWorkPhoneNumber(req.getWorkPhoneNumber());
+        p.setEmergencyContactName(req.getEmergencyContactName());
+        p.setEmergencyContactPhone(req.getEmergencyContactPhone());
+        p.setReferredBy(req.getReferredBy());
     }
 }
