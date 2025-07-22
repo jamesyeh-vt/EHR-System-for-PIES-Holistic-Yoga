@@ -33,7 +33,8 @@ export default function Login() {
                   const { token, role } = await loginRequest(username, password);
                   localStorage.setItem("pies-token", token);
                   localStorage.setItem("pies-role", ROLE_LABELS[role]);
-                  router.push("/clients/assigned");
+                  router.push("/menu");
+                  //router.push("/clients/assigned");
               } catch (err) {
                   alert("Login failed");
                   console.error(err);
