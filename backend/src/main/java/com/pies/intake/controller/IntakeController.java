@@ -1,21 +1,32 @@
 package com.pies.intake.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.pies.intake.model.IntakeForm;
 import com.pies.intake.model.IntakeFormHealthHistory;
 import com.pies.intake.payload.IntakeRequest;
 import com.pies.intake.service.IntakeService;
 import com.pies.therapist.model.Therapist;
 import com.pies.therapist.repository.TherapistRepository;
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "IntakeForms")
 @RestController
@@ -34,6 +45,7 @@ public class IntakeController {
      * Create a new intake form with full field mapping logic.
      * Returns HTTP 201 Created with the saved object.
      */
+    @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
     @PostMapping
     public ResponseEntity<?> create(@RequestBody @Valid IntakeRequest request) {
         Therapist therapist = therapistRepository.findById(request.getTherapistId())
@@ -97,6 +109,7 @@ public class IntakeController {
     }
 
     /** Update an existing intake form by ID. */
+    @PreAuthorize("hasAnyRole('SENIOR', 'ADMIN')")
     @PutMapping("{id}")
     public ResponseEntity<SimpleResponse> update(@PathVariable Long id, @RequestBody IntakeForm f) {
         svc.update(id, f);
@@ -104,12 +117,14 @@ public class IntakeController {
     }
 
     /** Get an intake form by ID. */
+    @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
     @GetMapping("{id}")
     public IntakeForm get(@PathVariable Long id) {
         return svc.findById(id);
     }
 
     /** List all active intake forms, with optional search and paging. */
+    @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
     @GetMapping
     public Page<IntakeForm> list(
             @RequestParam(defaultValue = "0") int page,
@@ -120,6 +135,7 @@ public class IntakeController {
     }
 
     /** Soft-delete an intake form by ID. */
+    @PreAuthorize("hasAnyRole('SENIOR', 'ADMIN')")
     @DeleteMapping("{id}")
     public ResponseEntity<SimpleResponse> delete(@PathVariable Long id) {
         svc.delete(id);

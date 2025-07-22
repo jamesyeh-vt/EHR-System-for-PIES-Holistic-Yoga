@@ -1,16 +1,27 @@
 package com.pies.therapist.controller;
 
-import com.pies.therapist.model.Therapist;
-import com.pies.therapist.service.TherapistService;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.pies.therapist.model.Therapist;
+import com.pies.therapist.service.TherapistService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 /**
  * REST endpoints for Therapist CRUD operations.
@@ -33,6 +44,7 @@ public class TherapistController {
      * @param t Therapist payload.
      * @return SimpleResponse or error message.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<SimpleResponse> create(@RequestBody @Valid Therapist t) {
         svc.save(t);
@@ -47,6 +59,7 @@ public class TherapistController {
      * @param t  Therapist payload.
      * @return SimpleResponse.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'SENIOR')")
     @PutMapping("{id}")
     public ResponseEntity<SimpleResponse> update(@PathVariable Long id, @RequestBody Therapist t) {
         svc.update(id, t);
@@ -59,6 +72,7 @@ public class TherapistController {
      * @param id Therapist ID.
      * @return Therapist entity.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'SENIOR')")
     @GetMapping("{id}")
     public Therapist get(@PathVariable Long id) {
         return svc.findById(id);
@@ -72,6 +86,7 @@ public class TherapistController {
      * @param q    Search query (optional).
      * @return Page of Therapist entities.
      */
+    @PreAuthorize("hasAnyRole('ADMIN', 'SENIOR')")
     @GetMapping
     public Page<Therapist> list(
             @RequestParam(defaultValue = "0") int page,
@@ -87,6 +102,7 @@ public class TherapistController {
      * @param id Therapist ID.
      * @return SimpleResponse.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("{id}")
     public ResponseEntity<SimpleResponse> delete(@PathVariable Long id) {
         svc.delete(id);
