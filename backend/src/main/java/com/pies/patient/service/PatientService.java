@@ -9,6 +9,7 @@ import com.pies.audit.service.AuditLogService;
 import com.pies.patient.model.Patient;
 import com.pies.patient.payload.PatientRequest;
 import com.pies.patient.repository.PatientRepository;
+import com.pies.therapist.repository.TherapistRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +17,10 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class PatientService {
+
     private final PatientRepository repo;
     private final AuditLogService audit;
+    private final TherapistRepository therapistRepo;
 
     @Transactional
     public Patient save(Patient p) {
@@ -59,6 +62,7 @@ public class PatientService {
         repo.save(p);
         audit.record("DELETE", "Patient", id);
     }
+
     @Transactional
     public Patient createFromRequest(PatientRequest req) {
         Patient p = new Patient();
@@ -77,6 +81,7 @@ public class PatientService {
         return saved;
     }
 
+    // Maps fields from the request DTO to the Patient entity
     private void mapRequestToEntity(PatientRequest req, Patient p) {
         p.setFirstName(req.getFirstName());
         p.setLastName(req.getLastName());
@@ -92,5 +97,12 @@ public class PatientService {
         p.setEmergencyContactName(req.getEmergencyContactName());
         p.setEmergencyContactPhone(req.getEmergencyContactPhone());
         p.setReferredBy(req.getReferredBy());
+
+        // If a therapist ID is provided, assign the therapist
+        if (req.getTherapistId() != null) {
+            var therapist = therapistRepo.findById(req.getTherapistId())
+                    .orElseThrow(() -> new EntityNotFoundException("Therapist " + req.getTherapistId() + " not found"));
+            p.setAssignedTherapist(therapist);
+        }
     }
 }

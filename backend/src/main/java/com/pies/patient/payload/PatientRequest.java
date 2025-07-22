@@ -33,4 +33,7 @@ public class PatientRequest {
     private String emergencyContactName;
     private String emergencyContactPhone;
     private String referredBy;
+
+    private Long therapistId;
+
 }
