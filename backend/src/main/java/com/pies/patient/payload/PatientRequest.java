@@ -34,6 +34,7 @@ public class PatientRequest {
     private String emergencyContactPhone;
     private String referredBy;
 
+    // OPTIONAL ATP
     private Long therapistId;
 
 }

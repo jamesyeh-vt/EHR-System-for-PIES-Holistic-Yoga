@@ -3,6 +3,7 @@ package com.pies.patient.model;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pies.therapist.model.Therapist;
 
@@ -95,6 +96,7 @@ public class Patient {
 
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_therapist_id")
     private Therapist assignedTherapist;

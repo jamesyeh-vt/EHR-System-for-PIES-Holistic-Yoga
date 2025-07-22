@@ -99,10 +99,12 @@ public class PatientService {
         p.setReferredBy(req.getReferredBy());
 
         // If a therapist ID is provided, assign the therapist
-        if (req.getTherapistId() != null) {
+        if (req.getTherapistId() != null && req.getTherapistId() > 0) {
             var therapist = therapistRepo.findById(req.getTherapistId())
-                    .orElseThrow(() -> new EntityNotFoundException("Therapist " + req.getTherapistId() + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Therapist " + req.getTherapistId() + " not found"));
             p.setAssignedTherapist(therapist);
         }
+
+
     }
 }
