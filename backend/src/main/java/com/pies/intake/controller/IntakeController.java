@@ -78,7 +78,7 @@ public class IntakeController {
         IntakeForm form = new IntakeForm();
         Patient patient = mapPatientRequestToPatient(request.getPatient(), therapist);
         form.setPatient(patient);
-        //form.setTherapist(therapist);
+        form.setTherapist(therapist);
         form.setDateSubmitted(request.getIntakeDate());
         form.setPracticedYogaBefore(request.getPracticedYogaBefore());
         form.setLastPracticedDate(request.getLastPracticedDate());
@@ -128,8 +128,10 @@ public class IntakeController {
 
         // SO MUCH DEBUGGING HERE - RIP 4 HOURS, GONE BUT NOT FORGOTTEN
        try {
+            //System.out.println(">>> Assigned therapist ID: " + therapist.getId());
+            //System.out.println(">>> Form therapist ID before save: " + form.getTherapist());
             IntakeForm saved = svc.save(form, history);
-            System.out.println(">>> Form saved, preparing to return response");
+            //System.out.println(">>> Form saved, preparing to return response");
             return new ResponseEntity<>("OK", HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
