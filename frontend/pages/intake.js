@@ -15,14 +15,32 @@ const activityLevels = [
   "Somewhat active", "Extremely active"
 ];
 
-const physicalHistoryConditions = [
-  "Broken/Dislocated bones", "Muscle strain/sprain", "Arthritis/Bursitis",
-  "Disc problems", "Scoliosis", "Back problems", "Osteoporosis",
-  "Diabetes type 1 or 2", "High/Low blood pressure", "Insomnia",
-  "Anxiety/Depression", "Asthma / Short breath", "Numbness / Tingling",
-  "Cancer", "Seizures", "Stroke", "Heart conditions / Chest pain",
-  "Pregnancy", "Auto​-immune condition", "Surgery"
+const physicalHistoryOptions = [
+  { label: "Broken/Dislocated bones", key: "brokenBones" },
+  { label: "Muscle strain/sprain", key: "muscleStrain" },
+  { label: "Arthritis/Bursitis", key: "arthritisBursitis" },
+  { label: "Disc problems", key: "discProblems" },
+  { label: "Scoliosis", key: "scoliosis" },
+  { label: "Back problems", key: "backProblems" },
+  { label: "Osteoporosis", key: "osteoporosis" },
+  { label: "Diabetes (type 1 or 2)", key: "diabetes" },
+  { label: "High/Low blood pressure", key: "bloodPressure" },
+  { label: "Insomnia", key: "insomnia" },
+  { label: "Anxiety/Depression", key: "anxietyDepression" },
+  { label: "Asthma / Short breath", key: "asthma" },
+  { label: "Numbness / Tingling", key: "numbnessTingling" },
+  { label: "Cancer", key: "cancer" },
+  { label: "Seizures", key: "seizures" },
+  { label: "Stroke", key: "stroke" },
+  { label: "Heart conditions / Chest pain", key: "heartConditions" },
+  { label: "Pregnancy", key: "pregnancy" },
+  { label: "Auto-immune condition", key: "autoimmune" },
+  { label: "Surgery", key: "surgery" },
+  { label: "Medications", key: "medications" }
 ];
+
+// Utility function to sanitize keys (same logic as in CheckBoxGroup.js)
+const sanitizeKey = (str) => str.replace(/[^a-zA-Z0-9]/g, "_");
 
 export default function IntakeFormPage() {
   const { register, handleSubmit, reset, watch } = useForm();
@@ -44,11 +62,16 @@ export default function IntakeFormPage() {
   }, []);
 
   const onSubmit = async (data) => {
+    console.log("Form data keys:", Object.keys(data).filter(k => k.includes("goals") || k.includes("styles") || k.includes("physicalHistory")));
+    console.log("Full form data:", data);
     const today = new Date().toISOString().split("T")[0];
-    const getSelectedOptions = (prefix, options) => {
-      return options.filter(opt => data[`${prefix}.${opt.replace(/\s+/g, "_")}`]);
-    };
 
+    const getSelectedOptions = (prefix, options) => {
+        return options.filter(opt => {
+          const key = typeof opt === "string" ? sanitizeKey(opt) : opt.key;
+          return data[prefix] && data[prefix][key];
+        }).map(opt => typeof opt === "string" ? opt : opt.label);
+      };
     const selectedYogaStyles = getSelectedOptions("styles", [...yogaStyles, "Other"]);
     const selectedYogaGoals = getSelectedOptions("goals", [
       "Improve fitness", "Increase well​-being", "Injury rehabilitation",
@@ -59,7 +82,15 @@ export default function IntakeFormPage() {
       "Yoga Philosophy", "Eastern energy systems", "Other"
     ]);
 
-    console.log("Raw form data:", data)
+    
+    const healthHistory = {};
+    physicalHistoryOptions.forEach(({ key }) => {
+      healthHistory[key] = data.physicalHistory?.[key] || false;
+    });
+    healthHistory.medications = !!data.medications;
+    healthHistory.medicationsList = data.medications || "";
+    healthHistory.additionalNotes = data.additionalDetails || "";
+    healthHistory.pregnancyEdd = data.pregnancyEdd || null;
 
     const payload = {
       patient: {
@@ -93,36 +124,11 @@ export default function IntakeFormPage() {
       yogaInterestsOther: data.interests?.Other || "",
       activityLevel: data.activityLevel,
       stressLevel: parseInt(data.stressLevel) || 0,
-      healthHistory: {
-        anxietyDepression: !!data["physicalHistory.Anxiety_Depression"],
-        arthritisBursitis: !!data["physicalHistory.Arthritis_Bursitis"],
-        asthma: !!data["physicalHistory.Asthma___Short_breath"],
-        autoimmune: !!data["physicalHistory.Auto__immune_condition"],
-        backProblems: !!data["physicalHistory.Back_problems"],
-        bloodPressure: !!data["physicalHistory.High_Low_blood_pressure"],
-        brokenBones: !!data["physicalHistory.Broken_Dislocated_bones"],
-        cancer: !!data["physicalHistory.Cancer"],
-        diabetes: !!data["physicalHistory.Diabetes_type_1_or_2"],
-        discProblems: !!data["physicalHistory.Disc_problems"],
-        heartConditions: !!data["physicalHistory.Heart_conditions___Chest_pain"],
-        insomnia: !!data["physicalHistory.Insomnia"],
-        muscleStrain: !!data["physicalHistory.Muscle_strain_sprain"],
-        numbnessTingling: !!data["physicalHistory.Numbness___Tingling"],
-        osteoporosis: !!data["physicalHistory.Osteoporosis"],
-        pregnancy: !!data["physicalHistory.Pregnancy"],
-        pregnancyEdd: data.pregnancyEdd || null,
-        scoliosis: !!data["physicalHistory.Scoliosis"],
-        seizures: !!data["physicalHistory.Seizures"],
-        stroke: !!data["physicalHistory.Stroke"],
-        surgery: !!data["physicalHistory.Surgery"],
-        medications: !!data.medications,
-        medicationsList: data.medications || "",
-        additionalNotes: data.additionalDetails || "",
-      }
-
+      healthHistory
     };
-    console.log("Submitting payload:", JSON.stringify(payload, null, 2));
 
+    console.log("Raw form data:", data);
+    console.log("Submitting payload:", JSON.stringify(payload, null, 2));
 
     try {
       const res = await apiFetch("http://localhost:8080/intakes", {
@@ -211,8 +217,12 @@ export default function IntakeFormPage() {
         ))}
       </select>
       <TextInput label="Stress level (1​-10)" name="stressLevel" type="number" min="1" max="10" register={register} />
-      <CheckBoxGroup title="Physical History" namePrefix="physicalHistory" options={physicalHistoryConditions} register={register} />
+      <CheckBoxGroup title="Physical History" namePrefix="physicalHistory" options={physicalHistoryOptions} register={register} />
       <TextInput label="Other / Explain" name="otherExplain" register={register} className="md:col-span-2" />
+      {watch("physicalHistory")?.pregnancy && (
+          <TextInput label="Expected Delivery Date" name="pregnancyEdd" type="date" register={register} />
+        )}
+
 
       <label className="block font-medium mb-1">Are you currently taking any medications?</label>
       <textarea {...register("medications")} className="w-full border rounded p-2 mb-4" rows="3" />
