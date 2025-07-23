@@ -15,3 +15,5 @@ COPY --from=build /app/target/pies-her-api-*.jar app.jar
 ENV SPRING_PROFILES_ACTIVE=prod
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","/app/app.jar"]
+
+ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=dev"

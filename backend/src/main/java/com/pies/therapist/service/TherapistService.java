@@ -1,15 +1,21 @@
 package com.pies.therapist.service;
 
-import com.pies.audit.service.AuditLogService;
-import com.pies.therapist.model.Therapist;
-import com.pies.therapist.repository.TherapistRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.pies.audit.service.AuditLogService;
+import com.pies.therapist.model.Therapist;
+import com.pies.therapist.repository.TherapistRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+
+
 
 /**
  * Service class for Therapist entity operations.
@@ -22,6 +28,8 @@ public class TherapistService {
     private final TherapistRepository repo;
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService auditLogService;
+
+
 
     /**
      * Creates and saves a therapist with hashed password.
@@ -122,4 +130,8 @@ public class TherapistService {
     public Iterable<Therapist> findAll() {
         return repo.findAll();
     }
+    public List<Therapist> getAllActiveTherapists() {
+        return repo.findByActiveStatusTrue();
+    }
+
 }

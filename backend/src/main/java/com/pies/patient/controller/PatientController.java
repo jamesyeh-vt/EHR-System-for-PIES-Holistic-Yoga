@@ -1,20 +1,30 @@
 package com.pies.patient.controller;
 
-import com.pies.patient.model.Patient;
-import com.pies.patient.service.PatientService;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.pies.patient.model.Patient;
+import com.pies.patient.payload.PatientRequest;
+import com.pies.patient.service.PatientService;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 /**
- * REST endpoints for Patient CRUD
+ * REST endpoints for Patient CRUD.
  */
 @Tag(name = "Patients")
 @RestController
@@ -27,16 +37,15 @@ public class PatientController {
     /**
      * Simple response structure for success messages.
      */
-    public record SimpleResponse(String message) {
-    }
+    public record SimpleResponse(String message) {}
 
     /**
      * Create a new patient.
      * Returns HTTP 201 Created with a success message.
      */
     @PostMapping
-    public ResponseEntity<SimpleResponse> create(@RequestBody @Valid Patient p) {
-        svc.save(p);
+    public ResponseEntity<SimpleResponse> create(@RequestBody @Valid PatientRequest req) {
+        svc.createFromRequest(req);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new SimpleResponse("Patient created successfully"));
     }
@@ -45,8 +54,8 @@ public class PatientController {
      * Update an existing patient by ID.
      */
     @PutMapping("{id}")
-    public ResponseEntity<SimpleResponse> update(@PathVariable Long id, @RequestBody Patient p) {
-        svc.update(id, p);
+    public ResponseEntity<SimpleResponse> update(@PathVariable Long id, @RequestBody @Valid PatientRequest req) {
+        svc.updateFromRequest(id, req);
         return ResponseEntity.ok(new SimpleResponse("Patient updated successfully"));
     }
 

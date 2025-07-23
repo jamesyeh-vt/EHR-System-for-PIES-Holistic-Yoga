@@ -1,13 +1,15 @@
 package com.pies.therapist.repository;
 
-import com.pies.therapist.model.Therapist;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Optional;
+import com.pies.therapist.model.Therapist;
 
 /**
  * Data access layer for Therapist entity
@@ -25,4 +27,10 @@ public interface TherapistRepository extends JpaRepository<Therapist, Long> {
             "(lower(t.firstName) like lower(concat('%', :q, '%')) " +
             "or lower(t.lastName) like lower(concat('%', :q, '%')))")
     Page<Therapist> search(@Param("q") String q, Pageable pageable);
+
+
+    List<Therapist> findByActiveStatusTrue();
+
+
+
 }

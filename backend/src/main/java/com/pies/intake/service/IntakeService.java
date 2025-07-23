@@ -1,18 +1,20 @@
 package com.pies.intake.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.pies.audit.service.AuditLogService;
 import com.pies.intake.model.IntakeForm;
 import com.pies.intake.model.IntakeFormHealthHistory;
 import com.pies.intake.repository.IntakeFormHealthHistoryRepository;
 import com.pies.intake.repository.IntakeRepository;
-import com.pies.patient.model.Patient;
 import com.pies.patient.repository.PatientRepository;
+import com.pies.therapist.repository.TherapistRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service class for managing intake forms and their health history.
@@ -27,6 +29,7 @@ public class IntakeService {
     private final AuditLogService auditLogService;
     private final IntakeFormHealthHistoryRepository healthHistoryRepository;
     private final PatientRepository patientRepository;
+    private final TherapistRepository therapistRepository;
 
     /**
      * Creates and persists an intake form and its associated health history.
@@ -38,8 +41,37 @@ public class IntakeService {
      *                      null)
      * @return the saved IntakeForm entity
      */
+
+    public IntakeForm save(IntakeForm form, IntakeFormHealthHistory history) {
+        System.out.println(">>> IntakeService.save() called");
+        System.out.println(">>> IntakeForm: " + form);
+        System.out.println(">>> HealthHistory: " + history);
+
+        try {
+            // Save Patient first if needed
+            patientRepository.save(form.getPatient());
+
+            // Save IntakeForm
+            IntakeForm savedForm = intakeRepository.save(form);
+
+            // Link health history if present
+            if (history != null) {
+                history.setIntakeForm(savedForm);
+                healthHistoryRepository.save(history);
+            }
+
+            return savedForm;
+        } catch (Exception e) {
+            System.out.println(">>> ERROR during save: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+     /* 
     @Transactional
     public IntakeForm save(IntakeForm form, IntakeFormHealthHistory healthHistory) {
+        System.out.println(">>> Saving IntakeForm: " + form);
         // Save patient entity if not persisted yet
         if (form.getPatient() != null && form.getPatient().getId() == null) {
             Patient savedPatient = patientRepository.save(form.getPatient());
@@ -52,11 +84,10 @@ public class IntakeService {
         if (healthHistory != null) {
             healthHistory.setIntakeForm(savedForm);
             healthHistoryRepository.save(healthHistory);
-        }
-
+        }     
         auditLogService.record("CREATE", "IntakeForm", savedForm.getId());
         return savedForm;
-    }
+    }*/
 
     /**
      * Saves a standalone intake form (no health history mapping).

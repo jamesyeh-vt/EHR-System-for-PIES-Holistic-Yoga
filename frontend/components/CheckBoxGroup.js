@@ -1,15 +1,24 @@
-export function CheckBoxGroup({ title, namePrefix, options, register }) {
+import React from "react";
+
+export const sanitizeKey = (str) => str.replace(/[^a-zA-Z0-9]/g, "_");
+
+export const CheckBoxGroup = ({ title, namePrefix, options, register }) => {
   return (
-    <fieldset className="mb-6 border border-gray-200 p-4 rounded-md">
-      <legend className="font-semibold mb-2 px-2 text-brandLavender">{title}</legend>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {options.map((opt) => (
-          <label key={opt} className="inline-flex items-center space-x-2">
-            <input type="checkbox" value={opt} {...register(`${namePrefix}.${opt}`)} />
-            <span>{opt}</span>
-          </label>
-        ))}
+    <div className="mb-6">
+      <h4 className="text-md font-medium mb-2 text-brandLavender">{title}</h4>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        {options.map((option) => {
+          const label = typeof option === "string" ? option : option.label;
+          const key = typeof option === "string" ? sanitizeKey(option) : option.key;
+
+          return (
+            <label key={key} className="flex items-center space-x-2">
+              <input type="checkbox" {...register(`${namePrefix}.${key}`)} />
+              <span>{label}</span>
+            </label>
+          );
+        })}
       </div>
-    </fieldset>
+    </div>
   );
-}
+};
