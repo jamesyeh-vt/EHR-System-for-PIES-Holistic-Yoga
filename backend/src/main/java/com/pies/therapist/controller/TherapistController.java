@@ -1,5 +1,7 @@
 package com.pies.therapist.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pies.therapist.model.Therapist;
+import com.pies.therapist.payload.TherapistSummary;
 import com.pies.therapist.service.TherapistService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -108,4 +111,11 @@ public class TherapistController {
         svc.delete(id);
         return ResponseEntity.ok(new SimpleResponse("Therapist deleted successfully"));
     }
+    @GetMapping("/active")
+    public List<TherapistSummary> getActiveTherapists() {
+        return svc.getAllActiveTherapists().stream()
+            .map(t -> new TherapistSummary(t.getId(), t.getFirstName() + " " + t.getLastName()))
+            .toList();
+    }
+
 }

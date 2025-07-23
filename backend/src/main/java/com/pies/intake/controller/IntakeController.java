@@ -1,5 +1,9 @@
 package com.pies.intake.controller;
 
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,12 +24,12 @@ import com.pies.intake.model.IntakeForm;
 import com.pies.intake.model.IntakeFormHealthHistory;
 import com.pies.intake.payload.IntakeRequest;
 import com.pies.intake.service.IntakeService;
+import com.pies.patient.model.Patient;
+import com.pies.patient.payload.PatientRequest;
 import com.pies.therapist.model.Therapist;
 import com.pies.therapist.repository.TherapistRepository;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Tag(name = "IntakeForms")
@@ -36,79 +40,111 @@ public class IntakeController {
 
     private final IntakeService svc;
     private final TherapistRepository therapistRepository;
-
-    /** Simple response structure for success messages. */
-    public record SimpleResponse(String message) {
+    private Patient mapPatientRequestToPatient(PatientRequest req, Therapist therapist) {
+        Patient p = new Patient();
+        p.setFirstName(req.getFirstName());
+        p.setLastName(req.getLastName());
+        p.setDateOfBirth(req.getDateOfBirth());
+        p.setAddress(req.getAddress());
+        p.setCity(req.getCity());
+        p.setState(req.getState());
+        p.setZipCode(req.getZipCode());
+        p.setEmail(req.getEmail());
+        p.setHomePhoneNumber(req.getHomePhoneNumber());
+        p.setCellPhoneNumber(req.getCellPhoneNumber());
+        p.setWorkPhoneNumber(req.getWorkPhoneNumber());
+        p.setEmergencyContactName(req.getEmergencyContactName());
+        p.setEmergencyContactPhone(req.getEmergencyContactPhone());
+        p.setReferredBy(req.getReferredBy());
+        p.setDateCreated(LocalDate.now());
+        p.setActiveStatus(true);
+        p.setTherapist(therapist);  // This links therapist_id in DB
+        return p;
     }
 
-    /**
-     * Create a new intake form with full field mapping logic.
-     * Returns HTTP 201 Created with the saved object.
-     */
+
+    /** Simple response structure for success messages. */
+    public record SimpleResponse(String message) {}
+    
+
     @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody @Valid IntakeRequest request) {
+    public ResponseEntity<?> createIntake(@RequestBody IntakeRequest request) {
+        // 1. Find and assign therapist
         Therapist therapist = therapistRepository.findById(request.getTherapistId())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Therapist not found with ID: " + request.getTherapistId()));
+                .orElseThrow(() -> new RuntimeException("Therapist not found"));
 
+        // 2. Create IntakeForm from request
         IntakeForm form = new IntakeForm();
-        form.setPatient(request.getPatient());
-        form.setTherapist(therapist);
+        Patient patient = mapPatientRequestToPatient(request.getPatient(), therapist);
+        form.setPatient(patient);
+        //form.setTherapist(therapist);
         form.setDateSubmitted(request.getIntakeDate());
         form.setPracticedYogaBefore(request.getPracticedYogaBefore());
         form.setLastPracticedDate(request.getLastPracticedDate());
         form.setYogaFrequency(request.getYogaFrequency());
-        form.setYogaStyles(
-                request.getYogaStyles() != null && !request.getYogaStyles().isEmpty()
-                        ? String.join(",", request.getYogaStyles())
-                        : null);
+
+        // Handle lists safely
+        form.setYogaStyles(Optional.ofNullable(request.getYogaStyles()).map(l -> String.join(",", l)).orElse(""));
         form.setYogaStyleOther(request.getYogaStyleOther());
-        form.setYogaGoals(
-                request.getYogaGoals() != null && !request.getYogaGoals().isEmpty()
-                        ? String.join(",", request.getYogaGoals())
-                        : null);
+        form.setYogaGoals(Optional.ofNullable(request.getYogaGoals()).map(l -> String.join(",", l)).orElse(""));
         form.setYogaGoalsOther(request.getYogaGoalsOther());
         form.setYogaGoalsExplanation(request.getYogaGoalsExplanation());
-        form.setYogaInterests(
-                request.getYogaInterests() != null && !request.getYogaInterests().isEmpty()
-                        ? String.join(",", request.getYogaInterests())
-                        : null);
+        form.setYogaInterests(Optional.ofNullable(request.getYogaInterests()).map(l -> String.join(",", l)).orElse(""));
         form.setYogaInterestsOther(request.getYogaInterestsOther());
+
         form.setActivityLevel(request.getActivityLevel());
         form.setStressLevel(request.getStressLevel());
 
-        IntakeFormHealthHistory history = new IntakeFormHealthHistory();
-        history.setAnxietyDepression(request.getHealthHistory().getAnxietyDepression());
-        history.setArthritisBursitis(request.getHealthHistory().getArthritisBursitis());
-        history.setAsthma(request.getHealthHistory().getAsthma());
-        history.setAutoimmune(request.getHealthHistory().getAutoimmune());
-        history.setBackProblems(request.getHealthHistory().getBackProblems());
-        history.setBloodPressure(request.getHealthHistory().getBloodPressure());
-        history.setBrokenBones(request.getHealthHistory().getBrokenBones());
-        history.setCancer(request.getHealthHistory().getCancer());
-        history.setDiabetes(request.getHealthHistory().getDiabetes());
-        history.setDiscProblems(request.getHealthHistory().getDiscProblems());
-        history.setHeartConditions(request.getHealthHistory().getHeartConditions());
-        history.setInsomnia(request.getHealthHistory().getInsomnia());
-        history.setMuscleStrain(request.getHealthHistory().getMuscleStrain());
-        history.setNumbnessTingling(request.getHealthHistory().getNumbnessTingling());
-        history.setOsteoporosis(request.getHealthHistory().getOsteoporosis());
-        history.setPregnancy(request.getHealthHistory().getPregnancy());
-        history.setPregnancyEdd(request.getHealthHistory().getPregnancyEdd());
-        history.setScoliosis(request.getHealthHistory().getScoliosis());
-        history.setSeizures(request.getHealthHistory().getSeizures());
-        history.setStroke(request.getHealthHistory().getStroke());
-        history.setSurgery(request.getHealthHistory().getSurgery());
-        history.setMedications(request.getHealthHistory().getMedications());
-        history.setMedicationsList(request.getHealthHistory().getMedicationsList());
-        history.setAdditionalNotes(request.getHealthHistory().getAdditionalNotes());
+        // 3. Map health history if provided
+        IntakeFormHealthHistory history = null;
+        if (request.getHealthHistory() != null) {
+            history = new IntakeFormHealthHistory();
+            history.setAnxietyDepression(request.getHealthHistory().getAnxietyDepression());
+            history.setArthritisBursitis(request.getHealthHistory().getArthritisBursitis());
+            history.setAsthma(request.getHealthHistory().getAsthma());
+            history.setAutoimmune(request.getHealthHistory().getAutoimmune());
+            history.setBackProblems(request.getHealthHistory().getBackProblems());
+            history.setBloodPressure(request.getHealthHistory().getBloodPressure());
+            history.setBrokenBones(request.getHealthHistory().getBrokenBones());
+            history.setCancer(request.getHealthHistory().getCancer());
+            history.setDiabetes(request.getHealthHistory().getDiabetes());
+            history.setDiscProblems(request.getHealthHistory().getDiscProblems());
+            history.setHeartConditions(request.getHealthHistory().getHeartConditions());
+            history.setInsomnia(request.getHealthHistory().getInsomnia());
+            history.setMuscleStrain(request.getHealthHistory().getMuscleStrain());
+            history.setNumbnessTingling(request.getHealthHistory().getNumbnessTingling());
+            history.setOsteoporosis(request.getHealthHistory().getOsteoporosis());
+            history.setPregnancy(request.getHealthHistory().getPregnancy());
+            history.setPregnancyEdd(request.getHealthHistory().getPregnancyEdd());
+            history.setScoliosis(request.getHealthHistory().getScoliosis());
+            history.setSeizures(request.getHealthHistory().getSeizures());
+            history.setStroke(request.getHealthHistory().getStroke());
+            history.setSurgery(request.getHealthHistory().getSurgery());
+            history.setMedications(request.getHealthHistory().getMedications());
+            history.setMedicationsList(request.getHealthHistory().getMedicationsList());
+            history.setAdditionalNotes(request.getHealthHistory().getAdditionalNotes());
+        }
 
-        IntakeForm savedForm = svc.save(form, history);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedForm);
+        // SO MUCH DEBUGGING HERE - RIP 4 HOURS, GONE BUT NOT FORGOTTEN
+       try {
+            IntakeForm saved = svc.save(form, history);
+            System.out.println(">>> Form saved, preparing to return response");
+            return new ResponseEntity<>("OK", HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                "status", 500,
+                "message", e.getMessage()
+            ));
+        }
+
+        
+        // 4. Save everything via service
+        ///IntakeForm saved = svc.save(form, history);
+        ///return ResponseEntity.ok(saved);
     }
 
-    /** Update an existing intake form by ID. */
     @PreAuthorize("hasAnyRole('SENIOR', 'ADMIN')")
     @PutMapping("{id}")
     public ResponseEntity<SimpleResponse> update(@PathVariable Long id, @RequestBody IntakeForm f) {
@@ -116,14 +152,12 @@ public class IntakeController {
         return ResponseEntity.ok(new SimpleResponse("Intake form updated successfully"));
     }
 
-    /** Get an intake form by ID. */
     @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
     @GetMapping("{id}")
     public IntakeForm get(@PathVariable Long id) {
         return svc.findById(id);
     }
 
-    /** List all active intake forms, with optional search and paging. */
     @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
     @GetMapping
     public Page<IntakeForm> list(
@@ -134,7 +168,6 @@ public class IntakeController {
         return svc.findActive(q, pageable);
     }
 
-    /** Soft-delete an intake form by ID. */
     @PreAuthorize("hasAnyRole('SENIOR', 'ADMIN')")
     @DeleteMapping("{id}")
     public ResponseEntity<SimpleResponse> delete(@PathVariable Long id) {

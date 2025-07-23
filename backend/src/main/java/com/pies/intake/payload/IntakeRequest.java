@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.pies.patient.model.Patient;
+import com.pies.patient.payload.PatientRequest;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class IntakeRequest {
-    private Patient patient;
+    private PatientRequest patient;
     private Long therapistId;
     private LocalDate intakeDate;
 
