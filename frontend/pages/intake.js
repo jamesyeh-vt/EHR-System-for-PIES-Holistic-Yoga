@@ -46,7 +46,7 @@ export default function IntakeFormPage() {
   const onSubmit = async (data) => {
     const today = new Date().toISOString().split("T")[0];
     const getSelectedOptions = (prefix, options) => {
-      return options.filter(opt => data[`${prefix}.${opt}`]);
+      return options.filter(opt => data[`${prefix}.${opt.replace(/\s+/g, "_")}`]);
     };
 
     const selectedYogaStyles = getSelectedOptions("styles", [...yogaStyles, "Other"]);
@@ -58,6 +58,8 @@ export default function IntakeFormPage() {
       "Asana (postures)", "Pranayama (breath work)", "Meditation",
       "Yoga Philosophy", "Eastern energy systems", "Other"
     ]);
+
+    console.log("Raw form data:", data)
 
     const payload = {
       patient: {
@@ -92,20 +94,20 @@ export default function IntakeFormPage() {
       activityLevel: data.activityLevel,
       stressLevel: parseInt(data.stressLevel) || 0,
       healthHistory: {
-        anxietyDepression: !!data["physicalHistory.Anxiety/Depression"],
-        arthritisBursitis: !!data["physicalHistory.Arthritis/Bursitis"],
-        asthma: !!data["physicalHistory.Asthma / Short breath"],
-        autoimmune: !!data["physicalHistory.Auto​-immune condition"],
-        backProblems: !!data["physicalHistory.Back problems"],
-        bloodPressure: !!data["physicalHistory.High/Low blood pressure"],
-        brokenBones: !!data["physicalHistory.Broken/Dislocated bones"],
+        anxietyDepression: !!data["physicalHistory.Anxiety_Depression"],
+        arthritisBursitis: !!data["physicalHistory.Arthritis_Bursitis"],
+        asthma: !!data["physicalHistory.Asthma___Short_breath"],
+        autoimmune: !!data["physicalHistory.Auto__immune_condition"],
+        backProblems: !!data["physicalHistory.Back_problems"],
+        bloodPressure: !!data["physicalHistory.High_Low_blood_pressure"],
+        brokenBones: !!data["physicalHistory.Broken_Dislocated_bones"],
         cancer: !!data["physicalHistory.Cancer"],
-        diabetes: !!data["physicalHistory.Diabetes type 1 or 2"],
-        discProblems: !!data["physicalHistory.Disc problems"],
-        heartConditions: !!data["physicalHistory.Heart conditions / Chest pain"],
+        diabetes: !!data["physicalHistory.Diabetes_type_1_or_2"],
+        discProblems: !!data["physicalHistory.Disc_problems"],
+        heartConditions: !!data["physicalHistory.Heart_conditions___Chest_pain"],
         insomnia: !!data["physicalHistory.Insomnia"],
-        muscleStrain: !!data["physicalHistory.Muscle strain/sprain"],
-        numbnessTingling: !!data["physicalHistory.Numbness / Tingling"],
+        muscleStrain: !!data["physicalHistory.Muscle_strain_sprain"],
+        numbnessTingling: !!data["physicalHistory.Numbness___Tingling"],
         osteoporosis: !!data["physicalHistory.Osteoporosis"],
         pregnancy: !!data["physicalHistory.Pregnancy"],
         pregnancyEdd: data.pregnancyEdd || null,
@@ -117,6 +119,7 @@ export default function IntakeFormPage() {
         medicationsList: data.medications || "",
         additionalNotes: data.additionalDetails || "",
       }
+
     };
     console.log("Submitting payload:", JSON.stringify(payload, null, 2));
 
