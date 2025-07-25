@@ -1,5 +1,8 @@
 package com.pies.soap.controller;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,10 +19,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pies.patient.model.Patient;
+import com.pies.patient.repository.PatientRepository;
 import com.pies.soap.model.SoapNote;
+import com.pies.soap.payload.SoapNoteRequest;
 import com.pies.soap.service.SoapNoteService;
+import com.pies.therapist.model.Therapist;
+import com.pies.therapist.repository.TherapistRepository;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -30,19 +42,60 @@ import lombok.RequiredArgsConstructor;
 public class SoapNoteController {
 
     private final SoapNoteService svc;
+    private final PatientRepository patientRepo;
+    private final TherapistRepository therapistRepo;
+
 
     /** Simple response structure for success messages. */
     public record SimpleResponse(String message) {
     }
 
     /** Create a new SOAP note. JUNIOR, SENIOR, and ADMIN roles allowed. */
+    @Operation(summary = "Create a new SOAP note", requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+    required = true,
+    content = @Content(schema = @Schema(implementation = SoapNoteRequest.class))
+    ))
     @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
     @PostMapping
-    public ResponseEntity<SimpleResponse> create(@RequestBody @Valid SoapNote n) {
-        svc.save(n);
+    public ResponseEntity<SimpleResponse> create(@RequestBody @Valid SoapNoteRequest req) {
+        Patient patient = patientRepo.findById(req.getPatientId())
+            .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID " + req.getPatientId()));
+        Therapist therapist = therapistRepo.findById(req.getTherapistId())
+            .orElseThrow(() -> new EntityNotFoundException("Therapist not found with ID " + req.getTherapistId()));
+        System.out.println("Received request: patientId=" + req.getPatientId() + ", therapistId=" + req.getTherapistId());
+
+
+
+        SoapNote note = new SoapNote();
+        note.setPatient(patient);
+        note.setTherapist(therapist);
+        note.setDateOfSession(LocalDate.parse(req.getDateOfSession()));
+        note.setTimeOfSession(LocalTime.parse(req.getTimeOfSession()));
+        note.setSessionLength(req.getSessionLength());
+        note.setTypeOfSession(req.getTypeOfSession());
+        note.setSNotes(req.getSnotes());
+        note.setONotes(req.getOnotes());
+        note.setANotes(req.getAnotes());
+        note.setPNotes(req.getPnotes());
+        note.setConditions(req.getConditions());
+        note.setMedications(req.getMedications());
+        note.setGoals(req.getGoals());
+        note.setDiet(req.getDiet());
+        note.setActivityLevel(req.getActivityLevel());
+        note.setHistoryOfConditions(req.getHistoryOfConditions());
+        note.setQuickNotes(req.getQuickNotes());
+        note.setAge(req.getAge());
+        note.setActiveStatus(req.isActiveStatus());
+
+        svc.save(note);
+        System.out.println("Saving SOAP note with patient ID: " + note.getPatient().getId());
+        System.out.println("Therapist ID: " + note.getTherapist().getId());
+
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new SimpleResponse("SOAP note created successfully"));
     }
+
 
     /** Update an existing SOAP note. Only SENIOR and ADMIN allowed. */
     @PreAuthorize("hasAnyRole('SENIOR', 'ADMIN')")

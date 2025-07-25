@@ -1,9 +1,12 @@
 package com.pies.common;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Global API Exception Handler for standardized error responses.
@@ -35,8 +38,10 @@ public class ApiExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflict(DataIntegrityViolationException ex) {
-        // You can customize the message based on the exception type or content
-        return new ApiError(409, "Duplicate entry or integrity constraint violation");
+        String detailedMessage = ex.getMostSpecificCause() != null
+            ? ex.getMostSpecificCause().getMessage()
+            : ex.getMessage();
+        return new ApiError(409, "Data Integrity Violation: " + detailedMessage);
     }
 
     /**

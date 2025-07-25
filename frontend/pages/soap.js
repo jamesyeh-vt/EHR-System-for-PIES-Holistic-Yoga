@@ -189,12 +189,64 @@ export default function SOAPFormPage() {
   /* ──────────────── Submit ──────────────── */
   const onSubmit = async (data) => {
     setLoading(true);
-    console.log("SOAP data", data);
-    alert("Saved to console (wire to backend when ready)");
-    setLoading(false);
-    alert("Saved to console (wire to backend when ready)");
+
+    try {
+      const token = localStorage.getItem("pies-token");
+
+      // TODO: Replace with real therapist ID logic
+      const therapistId = localStorage.getItem("therapistId") || 1; // fallback if not yet dynamic
+
+      const payload = {
+        patientId: data.patientId,
+        therapistId: therapistId,
+        dateOfSession: data.dateOfSession,
+        timeOfSession: data.timeOfSession,
+        sessionLength: data.sessionLength,
+        typeOfSession: data.typeOfSession || "",
+        activeStatus: true,
+
+        // Meta fields from intake
+        age: data.age,
+        activityLevel: data.activityLevel,
+        conditions: data.conditions,
+        historyOfConditions: data.historyOfConditions,
+        medications: data.medications,
+        goals: data.goals,
+        diet: data.diet,
+
+        // SOAP block fields
+        snotes: data.subjective,
+        onotes: data.objective,
+        anotes: data.assessment,
+        pnotes: data.plan,
+
+        // Quick notes (optional)
+        quickNotes: data.quickNotes || "",
+
+        // Signature is currently omitted
+      };
+
+      const res = await fetch("http://localhost:8080/soap-notes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to submit SOAP Note");
+
+      alert("SOAP Note saved successfully!");
+      reset(); // Clear the form
+    } catch (err) {
+      console.error("SOAP submission failed", err);
+      alert("There was an error saving the SOAP Note.");
+    }
+
     setLoading(false);
   };
+
 
   return (
     <form

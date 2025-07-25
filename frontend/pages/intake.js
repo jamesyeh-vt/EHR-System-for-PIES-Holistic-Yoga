@@ -62,8 +62,6 @@ export default function IntakeFormPage() {
   }, []);
 
   const onSubmit = async (data) => {
-    console.log("Form data keys:", Object.keys(data).filter(k => k.includes("goals") || k.includes("styles") || k.includes("physicalHistory")));
-    console.log("Full form data:", data);
     const today = new Date().toISOString().split("T")[0];
 
     const getSelectedOptions = (prefix, options) => {
