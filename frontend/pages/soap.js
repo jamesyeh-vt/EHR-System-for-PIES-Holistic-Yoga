@@ -50,11 +50,29 @@ const physicalHistoryConditions = [
   "Surgery",
 ];
 
-export function SOAPFormPage() {
+export function SOAPFormPage({ patientId }) {
   const { register, handleSubmit } = useForm();
-  const onSubmit = (data) => {
-    console.log("SOAP data", data);
-    alert("Saved to console");
+
+  const onSubmit = async (data) => {
+    const payload = {
+      dateOfSession: data.date,
+      sessionLength: data.duration,
+      typeOfSession: "Asana", // later make a dropdown
+      sNotes: data.subjective,
+      oNotes: data.objective,
+      aNotes: data.assessment,
+      pNotes: data.plan,
+      patient: {id: 1}
+      //patient: { id: parseInt(patientId) } // bound to selected client
+    };
+
+    try {
+      await createSoapNote(payload, token); // add token from auth context
+      alert("SOAP note created!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save note.");
+    }
   };
 
   return (
