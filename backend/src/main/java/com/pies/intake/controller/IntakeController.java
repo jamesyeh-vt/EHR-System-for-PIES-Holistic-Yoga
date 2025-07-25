@@ -23,12 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.pies.intake.model.IntakeForm;
 import com.pies.intake.model.IntakeFormHealthHistory;
 import com.pies.intake.payload.IntakeRequest;
+import com.pies.intake.repository.IntakeRepository;
 import com.pies.intake.service.IntakeService;
 import com.pies.patient.model.Patient;
 import com.pies.patient.payload.PatientRequest;
 import com.pies.therapist.model.Therapist;
 import com.pies.therapist.repository.TherapistRepository;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +42,8 @@ public class IntakeController {
 
     private final IntakeService svc;
     private final TherapistRepository therapistRepository;
+    private final IntakeRepository intakeFormRepository;
+    
     private Patient mapPatientRequestToPatient(PatientRequest req, Therapist therapist) {
         Patient p = new Patient();
         p.setFirstName(req.getFirstName());
@@ -130,11 +134,11 @@ public class IntakeController {
        try {
             //System.out.println(">>> Assigned therapist ID: " + therapist.getId());
             //System.out.println(">>> Form therapist ID before save: " + form.getTherapist());
-            IntakeForm saved = svc.save(form, history);
+            //IntakeForm saved = svc.save(form, history);
             //System.out.println(">>> Form saved, preparing to return response");
             return new ResponseEntity<>("OK", HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
                 "status", 500,
                 "message", e.getMessage()
@@ -175,5 +179,14 @@ public class IntakeController {
     public ResponseEntity<SimpleResponse> delete(@PathVariable Long id) {
         svc.delete(id);
         return ResponseEntity.ok(new SimpleResponse("Intake form deleted successfully"));
+    }
+
+    @Operation(summary = "Get latest intake form by patient ID")
+    @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
+    public ResponseEntity<IntakeForm> getByPatientId(@PathVariable Long patientId) {
+        return intakeFormRepository.findTopByPatientIdAndActiveStatusTrueOrderByIdDesc(patientId)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 }
