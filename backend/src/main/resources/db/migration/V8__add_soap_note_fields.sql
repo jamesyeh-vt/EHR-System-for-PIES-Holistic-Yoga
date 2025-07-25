@@ -1,0 +1,8 @@
+ALTER TABLE soap_notes
+ADD COLUMN conditions VARCHAR(255),
+ADD COLUMN age INT,
+ADD COLUMN medications VARCHAR(255),
+ADD COLUMN activity_level VARCHAR(255),
+ADD COLUMN goals VARCHAR(255),
+ADD COLUMN diet VARCHAR(255),
+ADD COLUMN history_of_conditions VARCHAR(255);

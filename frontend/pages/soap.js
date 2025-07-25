@@ -172,10 +172,10 @@ export default function SOAPFormPage() {
         // Autofill fields
         setValue("age", age);
         setValue("activityLevel", data.activityLevel || "");
-        setValue("conditions", conditionsList.join("; "));
-        setValue("medications", formatList(data.healthHistory?.medicationsList));
+        setValue("conditions", conditionsList.join("; ")|| "None Reported");
+        setValue("medications", formatList(data.healthHistory?.medicationsList) || "None Reported");
         setValue("goals", formatList(data.yogaGoals));
-        setValue("historyOfConditions", data.healthHistory?.otherConditionsExplanation?.trim() || "");
+        setValue("historyOfConditions", data.healthHistory?.otherConditionsExplanation?.trim() || "None Reported");
 
       } catch (err) {
         console.error("Failed to load intake form", err);
@@ -396,6 +396,17 @@ export default function SOAPFormPage() {
         </div>
       ))}
 
+      {/* Quick Notes */}
+      <div>
+        <label className="block font-medium mb-1">Quick Notes</label>
+        <textarea
+          {...register("quickNotes")}
+          className="w-full border rounded p-3"
+          rows={4}
+          placeholder="Any brief notes, comments, reminders..."
+        />
+      </div>
+
       {/* Signature block */}
       <div>
         <SignaturePadField
@@ -405,6 +416,8 @@ export default function SOAPFormPage() {
           className="border rounded"
         />
       </div>
+
+
 
       <div className="flex gap-3 pt-4">
         <button
