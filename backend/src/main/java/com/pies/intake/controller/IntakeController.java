@@ -30,7 +30,6 @@ import com.pies.patient.payload.PatientRequest;
 import com.pies.therapist.model.Therapist;
 import com.pies.therapist.repository.TherapistRepository;
 
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -134,7 +133,7 @@ public class IntakeController {
        try {
             //System.out.println(">>> Assigned therapist ID: " + therapist.getId());
             //System.out.println(">>> Form therapist ID before save: " + form.getTherapist());
-            //IntakeForm saved = svc.save(form, history);
+            IntakeForm saved = svc.save(form, history);
             //System.out.println(">>> Form saved, preparing to return response");
             return new ResponseEntity<>("OK", HttpStatus.OK);
         } catch (Exception e) {
@@ -180,7 +179,7 @@ public class IntakeController {
         svc.delete(id);
         return ResponseEntity.ok(new SimpleResponse("Intake form deleted successfully"));
     }
-
+    /*
     @Operation(summary = "Get latest intake form by patient ID")
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
@@ -188,5 +187,5 @@ public class IntakeController {
         return intakeFormRepository.findTopByPatientIdAndActiveStatusTrueOrderByIdDesc(patientId)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
-    }
+    }*/
 }
