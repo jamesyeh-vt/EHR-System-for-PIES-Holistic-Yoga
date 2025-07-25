@@ -2,6 +2,7 @@ package com.pies.intake.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -55,9 +56,15 @@ public class IntakeFormHealthHistory {
     private boolean seizures;
     private boolean stroke;
     private boolean surgery;
+
+    @Column(name = "other_conditions_explanation")
+    private String otherConditionsExplanation;
+
     private boolean medications;
     private String medicationsList;
     private String additionalNotes;
+
+
 
     public void setIntakeForm(IntakeForm intakeForm) {
         this.intakeForm = intakeForm;

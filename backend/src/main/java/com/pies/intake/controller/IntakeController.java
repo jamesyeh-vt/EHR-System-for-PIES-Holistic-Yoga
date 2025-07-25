@@ -127,6 +127,7 @@ public class IntakeController {
             history.setMedications(request.getHealthHistory().getMedications());
             history.setMedicationsList(request.getHealthHistory().getMedicationsList());
             history.setAdditionalNotes(request.getHealthHistory().getAdditionalNotes());
+            history.setOtherConditionsExplanation(request.getHealthHistory().getOtherConditionsExplanation());
         }
 
         // SO MUCH DEBUGGING HERE - RIP 4 HOURS, GONE BUT NOT FORGOTTEN
@@ -179,13 +180,12 @@ public class IntakeController {
         svc.delete(id);
         return ResponseEntity.ok(new SimpleResponse("Intake form deleted successfully"));
     }
-    /*
-    @Operation(summary = "Get latest intake form by patient ID")
+    
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("hasAnyRole('JUNIOR', 'SENIOR', 'ADMIN')")
     public ResponseEntity<IntakeForm> getByPatientId(@PathVariable Long patientId) {
         return intakeFormRepository.findTopByPatientIdAndActiveStatusTrueOrderByIdDesc(patientId)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
-    }*/
+    }
 }

@@ -28,6 +28,29 @@ export default function SOAPFormPage() {
 
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
+  const conditionMap = {
+    anxietyDepression: "Anxiety/Depression",
+    arthritisBursitis: "Arthritis/Bursitis",
+    asthma: "Asthma",
+    autoimmune: "Autoimmune Disorder",
+    backProblems: "Back Problems",
+    bloodPressure: "Blood Pressure Issues",
+    brokenBones: "Broken Bones",
+    cancer: "Cancer",
+    diabetes: "Diabetes",
+    discProblems: "Disc Problems",
+    heartConditions: "Heart Conditions",
+    insomnia: "Insomnia",
+    muscleStrain: "Muscle Strain",
+    numbnessTingling: "Numbness/Tingling",
+    osteoporosis: "Osteoporosis",
+    pregnancy: "Pregnancy",
+    scoliosis: "Scoliosis",
+    seizures: "Seizures",
+    stroke: "Stroke",
+    surgery: "Surgery",
+  };
+
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("pies-token") : null;
@@ -123,25 +146,43 @@ export default function SOAPFormPage() {
 
         const data = await res.json();
 
+        // Extract health history
+        const health = data.healthHistory || {};
+
+        // Build condition string
+        const conditionsList = Object.entries(conditionMap)
+          .filter(([key]) => health[key])
+          .map(([_, label]) => label);
+
         // Calculate age from DOB
         const dob = new Date(data.patient.dateOfBirth);
         const today = new Date();
         const age =
-          today.getFullYear() -
-          dob.getFullYear() -
+          today.getFullYear() - dob.getFullYear() -
           (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+
+        // Format semicolon-separated lists
+        const formatList = (val) =>
+          Array.isArray(val)
+            ? val.join("; ")
+            : typeof val === "string" && val.includes(",")
+            ? val.split(",").map((v) => v.trim()).join("; ")
+            : val || "";
 
         // Autofill fields
         setValue("age", age);
         setValue("activityLevel", data.activityLevel || "");
-        setValue("medications", data.healthHistory?.medicationsList || "");
-        setValue("goals", data.yogaGoals || "");
-        setValue("historyOfConditions", data.healthHistory?.additionalNotes || "");
+        setValue("conditions", conditionsList.join("; "));
+        setValue("medications", formatList(data.healthHistory?.medicationsList));
+        setValue("goals", formatList(data.yogaGoals));
+        setValue("historyOfConditions", data.healthHistory?.otherConditionsExplanation?.trim() || "");
+
       } catch (err) {
         console.error("Failed to load intake form", err);
       }
     })();
   }, [selectedPatientId, token, setValue]);
+
 
 
 
@@ -270,17 +311,16 @@ export default function SOAPFormPage() {
         <div className="sm:col-span-2">
           <label className="block font-medium mb-1">Activity Level</label>
           <select
-            {...register("activityLevel")}
+            {...register("activityLevel", { required: false })}
             className="w-full border rounded p-2"
-            defaultValue=""
           >
-            <option value="" disabled>
-              — Select —
-            </option>
-            <option value="HIGH">High</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="LOW">Low</option>
-          </select>
+            <option value="">— Select —</option>
+          <option value="Sedentary/Very inactive">Sedentary/Very inactive</option>
+          <option value="Somewhat inactive">Somewhat inactive</option>
+          <option value="Average">Average</option>
+          <option value="Somewhat active">Somewhat active</option>
+          <option value="Extremely active">Extremely active</option>
+        </select>
         </div>
       </div>
 
@@ -292,6 +332,17 @@ export default function SOAPFormPage() {
           className="w-full border rounded p-3"
           rows={5}
           placeholder="Describe current conditions, complaints, etc."
+        />
+      </div>
+
+      {/* History of conditions */}
+      <div>
+        <label className="block font-medium mb-1">History of Condition(s)</label>
+        <textarea
+          {...register("historyOfConditions")}
+          className="w-full border rounded p-3"
+          rows={4}
+          placeholder="Past injuries, surgeries, relevant medical history…"
         />
       </div>
 
@@ -326,16 +377,7 @@ export default function SOAPFormPage() {
         />
       </div>
 
-      {/* History of conditions */}
-      <div>
-        <label className="block font-medium mb-1">History of Condition(s)</label>
-        <textarea
-          {...register("historyOfConditions")}
-          className="w-full border rounded p-3"
-          rows={4}
-          placeholder="Past injuries, surgeries, relevant medical history…"
-        />
-      </div>
+      
 
       {/* SOAP sections */}
       {[

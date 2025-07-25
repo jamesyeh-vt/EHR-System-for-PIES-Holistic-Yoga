@@ -1,0 +1,2 @@
+ALTER TABLE intake_form_health_history
+ADD COLUMN other_conditions_explanation TEXT;

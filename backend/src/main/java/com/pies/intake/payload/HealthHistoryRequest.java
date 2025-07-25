@@ -27,6 +27,7 @@ public class HealthHistoryRequest {
     private Boolean seizures;
     private Boolean stroke;
     private Boolean surgery;
+    private String otherConditionsExplanation;
     private Boolean medications;
     private String medicationsList;
     private String additionalNotes;

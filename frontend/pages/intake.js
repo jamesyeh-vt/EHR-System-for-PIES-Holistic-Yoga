@@ -91,6 +91,7 @@ export default function IntakeFormPage() {
     healthHistory.medicationsList = data.medications || "";
     healthHistory.additionalNotes = data.additionalDetails || "";
     healthHistory.pregnancyEdd = data.pregnancyEdd || null;
+    healthHistory.otherConditionsExplanation = data.otherConditionsExplanation  || "";
 
     const payload = {
       patient: {
