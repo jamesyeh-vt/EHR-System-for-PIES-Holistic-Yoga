@@ -1,0 +1,46 @@
+/* Pastel Theme */
+
+body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background-color: #fff5f5;
+    color: #5d3a3a;
+    margin: 0;
+    padding: 0;
+}
+
+input, textarea, select {
+    border: 2px solid #ffb6b9;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 16px;
+    background-color: #fff0f5;
+}
+
+button {
+    background-color: #fcd5ce;
+    color: #6b4226;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+}
+
+button:hover {
+    background-color: #f9c6c9;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffe0f0;
+}
+
+th, td {
+    border: 1px solid #ffc2d1;
+    padding: 12px;
+    text-align: left;
+}
+
+.signature-pad {
+    border: 3px dotted #ffb6b9;
+    background-color: #ffeef5;
+}

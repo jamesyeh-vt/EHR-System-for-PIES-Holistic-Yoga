@@ -1,0 +1,47 @@
+/* Dark Mode Theme */
+
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #121212;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+}
+
+input, textarea, select {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border: 1px solid #333;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #bb86fc;
+    color: black;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #3700b3;
+    color: white;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #1e1e1e;
+}
+
+th, td {
+    border: 1px solid #444;
+    padding: 12px;
+    text-align: left;
+}
+
+.signature-pad {
+    border: 2px solid #bb86fc;
+    background-color: #1a1a1a;
+}

@@ -112,6 +112,8 @@ export default function SOAPFormPage() {
     console.log("SOAP data", data);
     alert("Saved to console (wire to backend when ready)");
     setLoading(false);
+    alert("Saved to console (wire to backend when ready)");
+    setLoading(false);
   };
 
   return (

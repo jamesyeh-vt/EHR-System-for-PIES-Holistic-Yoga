@@ -1,0 +1,46 @@
+/* Classic Theme */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #ffffff;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+input, textarea, select {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 12px;
+    text-align: left;
+}
+
+.signature-pad {
+    border: 2px dashed #888;
+    width: 100%;
+    height: 150px;
+}
