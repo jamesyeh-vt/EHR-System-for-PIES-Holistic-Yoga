@@ -5,6 +5,7 @@ import { TextInput } from "../components/TextInput";
 import { SignaturePadField } from "../components/SignaturePadField";
 import { SearchIcon, XIcon } from "lucide-react";
 
+
 /** Helper: format Date -> YYYY-MM-DD */
 const toYmd = (d) => (d ? new Date(d).toISOString().split("T")[0] : "");
 
@@ -60,9 +61,12 @@ export default function SOAPFormPage() {
     p.name.toLowerCase().includes(query.toLowerCase())
   );
 
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
+
   const choosePatient = (p) => {
     setValue("patientId", p.id, { shouldValidate: true });
     setQuery(p.name);
+    setSelectedPatientId(p.id);
     setOpenDropdown(false);
   };
 
@@ -105,6 +109,41 @@ export default function SOAPFormPage() {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  useEffect(() => {
+    if (!selectedPatientId || !token) return;
+
+    (async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/intakes/patient/${selectedPatientId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error("Failed to load intake data");
+
+        const data = await res.json();
+
+        // Calculate age from DOB
+        const dob = new Date(data.patient.dateOfBirth);
+        const today = new Date();
+        const age =
+          today.getFullYear() -
+          dob.getFullYear() -
+          (today < new Date(today.getFullYear(), dob.getMonth(), dob.getDate()) ? 1 : 0);
+
+        // Autofill fields
+        setValue("age", age);
+        setValue("activityLevel", data.activityLevel || "");
+        setValue("medications", data.healthHistory?.medicationsList || "");
+        setValue("goals", data.yogaGoals || "");
+        setValue("historyOfConditions", data.healthHistory?.additionalNotes || "");
+      } catch (err) {
+        console.error("Failed to load intake form", err);
+      }
+    })();
+  }, [selectedPatientId, token, setValue]);
+
+
 
   /* ──────────────── Submit ──────────────── */
   const onSubmit = async (data) => {
