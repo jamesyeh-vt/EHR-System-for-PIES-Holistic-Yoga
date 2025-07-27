@@ -5,6 +5,20 @@ import { TextInput } from "../components/TextInput";
 import { SignaturePadField } from "../components/SignaturePadField";
 import { SearchIcon, XIcon } from "lucide-react";
 
+/** Helper: live character counter */
+function FieldCount({ value, max }) {
+  const count = value?.length ?? 0;
+  const over = max != null && count > max;
+  return (
+    <div className={`text-xs text-right mt-1 ${over ? "text-red-600" : "text-gray-400"}`}>
+      {count}{max != null ? ` / ${max}` : ""}
+    </div>
+  );
+}
+
+/** DB-aligned limits */
+const MAX255 = 255;   // VARCHAR(255)
+const MAX100 = 100;   // VARCHAR(100) (therapist_signature) – kept visual only for now
 
 /** Helper: format Date -> YYYY-MM-DD */
 const toYmd = (d) => (d ? new Date(d).toISOString().split("T")[0] : "");
@@ -15,8 +29,9 @@ export default function SOAPFormPage() {
     handleSubmit,
     reset,
     setValue,
-    formState: { errors },
-  } = useForm();
+    watch,
+    formState: { errors, isValid },
+  } = useForm({ mode: "onChange" });
 
   const [loading, setLoading] = useState(false);
 
@@ -28,29 +43,9 @@ export default function SOAPFormPage() {
 
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
-  const conditionMap = {
-    anxietyDepression: "Anxiety/Depression",
-    arthritisBursitis: "Arthritis/Bursitis",
-    asthma: "Asthma",
-    autoimmune: "Autoimmune Disorder",
-    backProblems: "Back Problems",
-    bloodPressure: "Blood Pressure Issues",
-    brokenBones: "Broken Bones",
-    cancer: "Cancer",
-    diabetes: "Diabetes",
-    discProblems: "Disc Problems",
-    heartConditions: "Heart Conditions",
-    insomnia: "Insomnia",
-    muscleStrain: "Muscle Strain",
-    numbnessTingling: "Numbness/Tingling",
-    osteoporosis: "Osteoporosis",
-    pregnancy: "Pregnancy",
-    scoliosis: "Scoliosis",
-    seizures: "Seizures",
-    stroke: "Stroke",
-    surgery: "Surgery",
-  };
 
+  // for autofill
+  const [selectedPatientId, setSelectedPatientId] = useState(null);
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("pies-token") : null;
@@ -83,8 +78,6 @@ export default function SOAPFormPage() {
   const filteredPatients = patients.filter((p) =>
     p.name.toLowerCase().includes(query.toLowerCase())
   );
-
-  const [selectedPatientId, setSelectedPatientId] = useState(null);
 
   const choosePatient = (p) => {
     setValue("patientId", p.id, { shouldValidate: true });
@@ -133,6 +126,7 @@ export default function SOAPFormPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  /* ──────────────── Autofill from intake ──────────────── */
   useEffect(() => {
     if (!selectedPatientId || !token) return;
 
@@ -146,10 +140,31 @@ export default function SOAPFormPage() {
 
         const data = await res.json();
 
-        // Extract health history
-        const health = data.healthHistory || {};
+        // condition map from your intake structure
+        const conditionMap = {
+          anxietyDepression: "Anxiety/Depression",
+          arthritisBursitis: "Arthritis/Bursitis",
+          asthma: "Asthma",
+          autoimmune: "Autoimmune Disorder",
+          backProblems: "Back Problems",
+          bloodPressure: "Blood Pressure Issues",
+          brokenBones: "Broken Bones",
+          cancer: "Cancer",
+          diabetes: "Diabetes",
+          discProblems: "Disc Problems",
+          heartConditions: "Heart Conditions",
+          insomnia: "Insomnia",
+          muscleStrain: "Muscle Strain",
+          numbnessTingling: "Numbness/Tingling",
+          osteoporosis: "Osteoporosis",
+          pregnancy: "Pregnancy",
+          scoliosis: "Scoliosis",
+          seizures: "Seizures",
+          stroke: "Stroke",
+          surgery: "Surgery",
+        };
 
-        // Build condition string
+        const health = data.healthHistory || {};
         const conditionsList = Object.entries(conditionMap)
           .filter(([key]) => health[key])
           .map(([_, label]) => label);
@@ -172,37 +187,33 @@ export default function SOAPFormPage() {
         // Autofill fields
         setValue("age", age);
         setValue("activityLevel", data.activityLevel || "");
-        setValue("conditions", conditionsList.join("; ")|| "None Reported");
+        setValue("conditions", conditionsList.join("; ") || "None Reported");
         setValue("medications", formatList(data.healthHistory?.medicationsList) || "None Reported");
         setValue("goals", formatList(data.yogaGoals));
-        setValue("historyOfConditions", data.healthHistory?.otherConditionsExplanation?.trim() || "None Reported");
-
+        setValue(
+          "historyOfConditions",
+          data.healthHistory?.otherConditionsExplanation?.trim() || "None Reported"
+        );
       } catch (err) {
         console.error("Failed to load intake form", err);
       }
     })();
   }, [selectedPatientId, token, setValue]);
 
-
-
-
   /* ──────────────── Submit ──────────────── */
   const onSubmit = async (data) => {
     setLoading(true);
-
     try {
       const token = localStorage.getItem("pies-token");
-
-      // TODO: Replace with real therapist ID logic
-      const therapistId = localStorage.getItem("therapistId") || 1; // fallback if not yet dynamic
+      const therapistId = localStorage.getItem("therapistId") || 1;
 
       const payload = {
         patientId: data.patientId,
-        therapistId: therapistId,
+        therapistId,
         dateOfSession: data.dateOfSession,
         timeOfSession: data.timeOfSession,
-        sessionLength: data.sessionLength,
-        typeOfSession: data.typeOfSession || "",
+        sessionLength: data.sessionLength || "",
+        typeOfSession: data.typeOfSession || "", // remains optional
         activeStatus: true,
 
         // Meta fields from intake
@@ -214,16 +225,14 @@ export default function SOAPFormPage() {
         goals: data.goals,
         diet: data.diet,
 
-        // SOAP block fields
+        // SOAP blocks
         snotes: data.subjective,
         onotes: data.objective,
         anotes: data.assessment,
         pnotes: data.plan,
 
-        // Quick notes (optional)
+        // Quick notes (TEXT)
         quickNotes: data.quickNotes || "",
-
-        // Signature is currently omitted
       };
 
       const res = await fetch("http://localhost:8080/soap-notes", {
@@ -236,23 +245,18 @@ export default function SOAPFormPage() {
       });
 
       if (!res.ok) throw new Error("Failed to submit SOAP Note");
-
       alert("SOAP Note saved successfully!");
-      reset(); // Clear the form
+      reset();
     } catch (err) {
       console.error("SOAP submission failed", err);
       alert("There was an error saving the SOAP Note.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
-
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-8 max-w-3xl mx-auto py-10"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10">
       <h2 className="text-2xl font-semibold text-brandLavender">SOAP Note</h2>
 
       {/* hidden patientId field that backend will need */}
@@ -274,16 +278,12 @@ export default function SOAPFormPage() {
               setQuery(e.target.value);
               setOpenDropdown(true);
               setHighlightIdx(0);
-              // clear selected id until user chooses again
               setValue("patientId", "", { shouldValidate: true });
             }}
             onFocus={() => setOpenDropdown(true)}
             onKeyDown={onPatientKeyDown}
           />
-          <SearchIcon
-            size={18}
-            className="absolute left-2 top-2.5 text-gray-400 pointer-events-none"
-          />
+          <SearchIcon size={18} className="absolute left-2 top-2.5 text-gray-400 pointer-events-none" />
           {query && (
             <button
               type="button"
@@ -301,9 +301,7 @@ export default function SOAPFormPage() {
               <li
                 key={p.id}
                 className={`px-3 py-2 cursor-pointer text-sm ${
-                  idx === highlightIdx
-                    ? "bg-brandLavender/10 text-brandLavender"
-                    : "hover:bg-gray-100"
+                  idx === highlightIdx ? "bg-brandLavender/10 text-brandLavender" : "hover:bg-gray-100"
                 }`}
                 onMouseDown={(e) => {
                   e.preventDefault();
@@ -312,21 +310,17 @@ export default function SOAPFormPage() {
                 onMouseEnter={() => setHighlightIdx(idx)}
               >
                 <span className="font-medium">{p.name}</span>
-                {p.dob && (
-                  <span className="ml-2 text-gray-500 text-xs">({p.dob})</span>
-                )}
+                {p.dob && <span className="ml-2 text-gray-500 text-xs">({p.dob})</span>}
               </li>
             ))}
           </ul>
         )}
         {errors.patientId && (
-          <p className="text-red-500 text-xs mt-1">
-            Please pick a patient from the list.
-          </p>
+          <p className="text-red-500 text-xs mt-1">Please pick a patient from the list.</p>
         )}
       </div>
 
-      {/* Basic meta fields (updated) */}
+      {/* Basic meta fields */}
       <div className="grid sm:grid-cols-2 gap-4">
         <TextInput
           label="Date of Session"
@@ -334,6 +328,7 @@ export default function SOAPFormPage() {
           type="date"
           register={register}
           required
+          {...register("dateOfSession", { required: "Date is required" })}
         />
 
         <TextInput
@@ -342,96 +337,132 @@ export default function SOAPFormPage() {
           type="time"
           register={register}
           required
+          {...register("timeOfSession", { required: "Time is required" })}
         />
 
-        <TextInput
-          label="Session Length"
-          name="sessionLength"
-          placeholder="e.g. 60 min"
-          register={register}
-        />
-
-        <TextInput
-          label="Age"
-          name="age"
-          type="number"
-          register={register}
-          min={0}
-        />
-
-        {/* Activity Level dropdown */}
+        {/* session_length is VARCHAR(255) */}
         <div className="sm:col-span-2">
+          <label className="block font-medium mb-1">Session Length</label>
+          <input
+            className="w-full border rounded p-2"
+            placeholder="e.g. 60 min"
+            maxLength={MAX255}
+            {...register("sessionLength", {
+              maxLength: { value: MAX255, message: `Max ${MAX255} characters` },
+            })}
+          />
+          <FieldCount value={watch("sessionLength")} max={MAX255} />
+          {errors.sessionLength && (
+            <p className="text-red-600 text-xs mt-1">{errors.sessionLength.message}</p>
+          )}
+        </div>
+
+        <TextInput label="Age" name="age" type="number" register={register} min={0}
+          {...register("age", {
+            min: { value: 0, message: "Age cannot be negative" },
+            max: { value: 120, message: "Please enter a realistic age" },
+            valueAsNumber: true,
+          })}
+        />
+
+        {/* Activity Level (VARCHAR(255)) */}
+        <div className="sm:col-span-1">
           <label className="block font-medium mb-1">Activity Level</label>
           <select
-            {...register("activityLevel", { required: false })}
             className="w-full border rounded p-2"
+            {...register("activityLevel", {
+              maxLength: { value: MAX255, message: `Max ${MAX255} characters` },
+            })}
           >
             <option value="">— Select —</option>
-          <option value="Sedentary/Very inactive">Sedentary/Very inactive</option>
-          <option value="Somewhat inactive">Somewhat inactive</option>
-          <option value="Average">Average</option>
-          <option value="Somewhat active">Somewhat active</option>
-          <option value="Extremely active">Extremely active</option>
-        </select>
+            <option value="Sedentary/Very inactive">Sedentary/Very inactive</option>
+            <option value="Somewhat inactive">Somewhat inactive</option>
+            <option value="Average">Average</option>
+            <option value="Somewhat active">Somewhat active</option>
+            <option value="Extremely active">Extremely active</option>
+          </select>
         </div>
       </div>
 
-      {/* Large Conditions box */}
+      {/* VARCHAR(255) textareas with counters */}
       <div>
         <label className="block font-medium mb-1">Conditions</label>
         <textarea
-          {...register("conditions")}
           className="w-full border rounded p-3"
           rows={5}
           placeholder="Describe current conditions, complaints, etc."
+          maxLength={MAX255}
+          {...register("conditions", {
+            maxLength: { value: MAX255, message: `Max ${MAX255} characters` },
+          })}
         />
+        <FieldCount value={watch("conditions")} max={MAX255} />
+        {errors.conditions && <p className="text-red-600 text-xs mt-1">{errors.conditions.message}</p>}
       </div>
 
-      {/* History of conditions */}
       <div>
         <label className="block font-medium mb-1">History of Condition(s)</label>
         <textarea
-          {...register("historyOfConditions")}
           className="w-full border rounded p-3"
           rows={4}
           placeholder="Past injuries, surgeries, relevant medical history…"
+          maxLength={MAX255}
+          {...register("historyOfConditions", {
+            maxLength: { value: MAX255, message: `Max ${MAX255} characters` },
+          })}
         />
+        <FieldCount value={watch("historyOfConditions")} max={MAX255} />
+        {errors.historyOfConditions && (
+          <p className="text-red-600 text-xs mt-1">{errors.historyOfConditions.message}</p>
+        )}
       </div>
 
-      {/* Medications, Goals, Diet as large text areas */}
       <div>
         <label className="block font-medium mb-1">Medications</label>
         <textarea
-          {...register("medications")}
           className="w-full border rounded p-3"
           rows={4}
           placeholder="List medications (one per line or separated by commas)"
+          maxLength={MAX255}
+          {...register("medications", {
+            maxLength: { value: MAX255, message: `Max ${MAX255} characters` },
+          })}
         />
+        <FieldCount value={watch("medications")} max={MAX255} />
+        {errors.medications && <p className="text-red-600 text-xs mt-1">{errors.medications.message}</p>}
       </div>
 
       <div>
         <label className="block font-medium mb-1">Goals</label>
         <textarea
-          {...register("goals")}
           className="w-full border rounded p-3"
           rows={4}
           placeholder="Short and long term goals..."
+          maxLength={MAX255}
+          {...register("goals", {
+            maxLength: { value: MAX255, message: `Max ${MAX255} characters` },
+          })}
         />
+        <FieldCount value={watch("goals")} max={MAX255} />
+        {errors.goals && <p className="text-red-600 text-xs mt-1">{errors.goals.message}</p>}
       </div>
 
       <div>
         <label className="block font-medium mb-1">Diet</label>
         <textarea
-          {...register("diet")}
           className="w-full border rounded p-3"
           rows={4}
           placeholder="Dietary considerations, restrictions, preferences..."
+          maxLength={MAX255}
+          {...register("diet", {
+            maxLength: { value: MAX255, message: `Max ${MAX255} characters` },
+          })}
         />
+        <FieldCount value={watch("diet")} max={MAX255} />
+        {errors.diet && <p className="text-red-600 text-xs mt-1">{errors.diet.message}</p>}
       </div>
 
-      
-
-      {/* SOAP sections */}
+      {/* SOAP sections (all VARCHAR(255)) */}
       {[
         { label: "Subjective (S)", name: "subjective" },
         { label: "Objective (O)", name: "objective" },
@@ -441,25 +472,31 @@ export default function SOAPFormPage() {
         <div key={sec.name}>
           <label className="block font-medium mb-1">{sec.label}</label>
           <textarea
-            {...register(sec.name)}
             rows={5}
             className="w-full border rounded p-3"
+            maxLength={MAX255}
+            {...register(sec.name, {
+              maxLength: { value: MAX255, message: `Max ${MAX255} characters` },
+            })}
           />
+          <FieldCount value={watch(sec.name)} max={MAX255} />
+          {errors[sec.name] && <p className="text-red-600 text-xs mt-1">{errors[sec.name].message}</p>}
         </div>
       ))}
 
-      {/* Quick Notes */}
+      {/* Quick Notes (TEXT) – no DB limit */}
       <div>
         <label className="block font-medium mb-1">Quick Notes</label>
         <textarea
-          {...register("quickNotes")}
           className="w-full border rounded p-3"
           rows={4}
           placeholder="Any brief notes, comments, reminders..."
+          {...register("quickNotes")}
         />
+        <FieldCount value={watch("quickNotes")} />
       </div>
 
-      {/* Signature block */}
+      {/* Signature block (DB column is VARCHAR(100); current pad is visual-only) */}
       <div>
         <SignaturePadField
           name="signature"
@@ -467,15 +504,15 @@ export default function SOAPFormPage() {
           register={register}
           className="border rounded"
         />
+        {/* If you switch to storing a typed signature, cap it at MAX100 and send to backend. */}
       </div>
-
-
 
       <div className="flex gap-3 pt-4">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !isValid}
           className="bg-brandLavender text-white px-6 py-2 rounded disabled:opacity-50"
+          title={!isValid ? "Fix validation errors before submitting" : ""}
         >
           {loading ? "Saving…" : "Save"}
         </button>
