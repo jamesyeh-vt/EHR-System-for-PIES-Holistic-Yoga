@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,7 @@ import java.time.LocalTime;
 @RequestMapping("/soap-notes")
 @RequiredArgsConstructor
 public class SoapNoteController {
+    private static final Logger logger = LoggerFactory.getLogger(SoapNoteController.class);
 
     private final SoapNoteService svc;
     private final PatientRepository patientRepo;
@@ -56,8 +59,7 @@ public class SoapNoteController {
                 .orElseThrow(() -> new EntityNotFoundException("Patient not found with ID " + req.getPatientId()));
         Therapist therapist = therapistRepo.findById(req.getTherapistId())
                 .orElseThrow(() -> new EntityNotFoundException("Therapist not found with ID " + req.getTherapistId()));
-        System.out.println("Received request: patientId=" + req.getPatientId() + ", therapistId=" + req.getTherapistId());
-
+        logger.info("Received request: patientId={}, therapistId={}", req.getPatientId(), req.getTherapistId());
 
         SoapNote note = new SoapNote();
         note.setPatient(patient);
@@ -82,8 +84,8 @@ public class SoapNoteController {
         note.setActiveStatus(req.isActiveStatus());
 
         svc.save(note);
-        System.out.println("Saving SOAP note with patient ID: " + note.getPatient().getId());
-        System.out.println("Therapist ID: " + note.getTherapist().getId());
+        logger.info("Saving SOAP note with patient ID: {}", note.getPatient().getId());
+        logger.info("Therapist ID: {}", note.getTherapist().getId());
 
 
         return ResponseEntity.status(HttpStatus.CREATED)

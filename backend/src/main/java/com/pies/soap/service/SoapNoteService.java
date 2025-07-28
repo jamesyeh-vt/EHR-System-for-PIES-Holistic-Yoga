@@ -5,6 +5,8 @@ import com.pies.soap.model.SoapNote;
 import com.pies.soap.repository.SoapNoteRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class SoapNoteService {
-
+    private static final Logger logger = LoggerFactory.getLogger(SoapNoteService.class);
     private final SoapNoteRepository repo;
     private final AuditLogService audit;
 
@@ -81,8 +83,7 @@ public class SoapNoteService {
             audit.record("CREATE", "SoapNote", saved.getId());
             return saved;
         } catch (DataIntegrityViolationException ex) {
-            System.err.println("DataIntegrityViolationException: " + ex.getMessage());
-            ex.printStackTrace();  // Log full trace
+            logger.error("DataIntegrityViolationException: {}", ex.getMessage(), ex);
             throw ex;  // Let global handler respond
         }
     }
