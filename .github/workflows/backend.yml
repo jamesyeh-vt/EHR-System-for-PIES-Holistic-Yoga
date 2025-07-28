@@ -64,12 +64,4 @@ jobs:
           port: ${{ secrets.GCP_PORT }}
           script: |
             cd ~/app/backend
-<<<<<<< HEAD
-<<<<<<< HEAD
-            docker compose -f docker-compose.yml -f docker-compose.override.deploy.yml up -d --force-recreate api
-=======
-            docker compose -f docker-compose.yml -f docker-compose.override.deploy.yml up -d --force-recreate api
->>>>>>> 285a31550f28f3f273afb4c2b6b07e6013893aa6
-=======
-            docker compose -f docker-compose.yml -f docker-compose.override.deploy.yml up -d --force-recreate api
->>>>>>> origin/main
+            docker compose -f docker-compose.yml -f docker-compose.override.deploy.yml up -d api
