@@ -1,17 +1,15 @@
 package com.pies.soap.service;
 
+import com.pies.audit.service.AuditLogService;
+import com.pies.soap.model.SoapNote;
+import com.pies.soap.repository.SoapNoteRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.pies.audit.service.AuditLogService;
-import com.pies.soap.model.SoapNote;
-import com.pies.soap.repository.SoapNoteRepository;
-
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +39,7 @@ public class SoapNoteService {
         if (in.getPNotes() != null) n.setPNotes(in.getPNotes());
         if (in.getConditions() != null) n.setConditions(in.getConditions());
         if (in.getMedications() != null) n.setMedications(in.getMedications());
+        if (in.getMedicationNote() != null) n.setMedicationNote(in.getMedicationNote());
         if (in.getGoals() != null) n.setGoals(in.getGoals());
         if (in.getDiet() != null) n.setDiet(in.getDiet());
         if (in.getActivityLevel() != null) n.setActivityLevel(in.getActivityLevel());
