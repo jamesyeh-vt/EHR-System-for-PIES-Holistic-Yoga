@@ -1,6 +1,6 @@
-// pages/notes.js  (or wherever this lives)
+// pages/notes/index.js
 import {useEffect, useMemo, useState} from "react";
-import Link from "next/link";
+import {useRouter} from "next/router";
 import {SearchIcon} from "lucide-react";
 
 /** helper: parse YYYY-MM-DD or ISO to safe Date (UTC to avoid off-by-one) */
@@ -30,6 +30,7 @@ const TYPE_META = {
 };
 
 export default function TherapistNotesPage() {
+    const router = useRouter();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [query, setQuery] = useState("");
@@ -78,7 +79,7 @@ export default function TherapistNotesPage() {
                             type: typeKey,
                             patientName: patientName || "Unknown patient",
                             date: parseYmd(dateStr) || new Date(),
-                            href: `/notes/view?type=${typeKey.toLowerCase()}&id=${row.id}`,
+                            href: `/notes/${typeKey.toLowerCase()}/${row.id}`,
                         };
                     });
 
@@ -112,7 +113,11 @@ export default function TherapistNotesPage() {
     const toggleType = (t) => {
         setFilterTypes((prev) => {
             const next = new Set(prev);
-            next.has(t) ? next.delete(t) : next.add(t);
+            if (next.has(t)) {
+                next.delete(t);
+            } else {
+                next.add(t);
+            }
             return next;
         });
     };
@@ -196,12 +201,12 @@ export default function TherapistNotesPage() {
                                     </p>
                                 </div>
 
-                                <Link
-                                    href={item.href}
+                                <button
+                                    onClick={() => router.push(item.href)}
                                     className="text-brandLavender hover:underline text-sm font-medium self-start sm:self-auto"
                                 >
                                     View
-                                </Link>
+                                </button>
                             </div>
 
                             {/* hover overlay effect */}
