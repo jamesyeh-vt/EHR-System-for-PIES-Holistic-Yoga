@@ -117,8 +117,8 @@ export function SelfAssessmentPage() {
             dateOfSession: d.dateOfSession,
             goalOfSession: d.q0 || "",
             assessment: d.q1 || "",
-            patient: {id: selectedPatientId},
-            therapist: {id: therapistId},
+            patientId: selectedPatientId,
+            therapistId: therapistId,
             notes: JSON.stringify(d)
         };
 
